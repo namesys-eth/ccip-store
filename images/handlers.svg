@@ -15,7 +15,7 @@
    id="svg6"
    inkscape:version="1.0.2 (e86c8708, 2021-01-15)"
    sodipodi:docname="handlers.svg"
-   inkscape:export-filename="/Users/sshmatrix/Idee/sshmatrix/Buidl/namesys-eth/namesys-ccip-write/images/schematic.png"
+   inkscape:export-filename="/Users/sshmatrix/Idee/sshmatrix/Buidl/namesys-eth/namesys-ccip-write/images/handlers.png"
    inkscape:export-xdpi="150"
    inkscape:export-ydpi="150">
   <metadata
@@ -339,7 +339,7 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.28565616"
+     inkscape:zoom="0.27471447"
      inkscape:cx="1412.3018"
      inkscape:cy="575.98973"
      inkscape:document-units="mm"
@@ -546,7 +546,7 @@
        sodipodi:nodetypes="cccc" />
     <path
        style="fill:none;stroke:#ff1800;stroke-width:0.305;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 74.396957,180.63067 H 55.615062 V 150.50248 H 34.967549"
+       d="M 74.396957,180.63067 H 55.615062 V 150.50248 H 32.967861"
        id="path2263-1-4-5-4-9-6-5-6-5"
        sodipodi:nodetypes="cccc" />
     <text

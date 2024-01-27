@@ -44,46 +44,37 @@ The specification revolves around the structure and description of an arbitrary 
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/schematic.png)
 
-### Data Stored in an L1
-
-
-### Data Stored in an L2
+### L1 Handler
 
 #### Example
 
+### L2 Handler
 
+#### Example
 
-### Data Stored in an Off-Chain Database
+### Database Handler
 
+#### Example
 
-### Data Stored in an L2 & an Off-Chain Database
+### Decentralised Storage Handler
 
+#### Example with IPFS
 
+#### Example with Arweave
+
+### Stacking Handlers
+
+#### Example
 
 ### Events
 
-
-
-### Write Deferral Interface
-
-
-
-### Use of transactions with storage-deferral reversions
-
-
-## Rationale
-### Use of `revert` to convey call information
-
-
-### Use of multiple reversion & handler types to better define security guarantees 
-  
-
+### Interface
 
 ## Backwards Compatibility
 
 ## Security Considerations
 
-### Fingerprinting attacks
+###
 
 ## Copyright
 Copyright and related rights waived via [CC0](../LICENSE.md).
