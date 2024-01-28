@@ -125,7 +125,7 @@ function callback(
     bytes input, 
     bytes extraData
 ) external view {
-    (bytes output, bytes puke) = calculateOutput(response, input, extraData)
+    (bytes output, bytes puke) = calculateOutputForX1(response, input, extraData)
     // Defer another write call to X2 handler
     revert StorageHandledByX2(
         output,
@@ -144,7 +144,7 @@ function callback2(
     bytes input2, 
     bytes extraData2
 ) external view {
-    (bytes output2, bytes puke2) = calculateOutput(response2, input2, extraData2)
+    (bytes output2, bytes puke2) = calculateOutputForX2(response2, input2, extraData2)
     // Defer another write call to X3 handler
     revert StorageHandledByX3(
         output2,
@@ -176,7 +176,7 @@ type config = [
     ] 
 // Data inside config
 bytes[] config = [
-        coordinates, // List of string formatted coordinates, e.g. ChainID for L2, URL for off-chain storage etc; can never be empty
+        coordinates, // List of string-formatted coordinates, e.g. ChainID for L2, URL for off-chain storage etc; can never be empty
         authorities || [], // List of addresses of authorities; can be empty for unsafe record storage in off-chain databases or decentralised storages, or for on-chain signers
         approvals || [], // List of bytes-like signatures/approvals; can be empty for unsafe record storage in off-chain databases or decentralised storages
         containers || [] // List of bytes-like access signatures for containers; usually empty except for decentralised storages wrapped in namespaces
@@ -194,7 +194,7 @@ revert StorageHandledByL2(
         bytes[], 
         bytes[]
     ] [
-        chains, // List of string formatted ChainID values
+        chains, // List of string-formatted ChainID values
         contracts, // List of contracts on L2
         [], // MUST be empty for L2 storage handler
         [] // MUST be empty for L2 storage handler
@@ -247,12 +247,38 @@ function callback(
     bytes input,
     bytes extraData
 ) external view {
-    bytes output = calculateOutput(...)
+    bytes output = calculateOutputForL2(...)
     return (
         output,
         response == true
     )
 }
+```
+
+##### CALL
+
+```solidity
+setValueWithConfig(
+    "avatar", 
+    "https://namesys.xyz/logo.png",
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        [
+            "11", // ChainID for chain 1
+            "25" // ChainID for chain 2
+        ], 
+        [
+            "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Contract address on chain 1
+            "0x999999cf1046e68e36E1aA2E0E07105eDDD1f08E" // Contract address on chain 2
+        ],
+        [],
+        []
+    ]
+)
 ```
 
 ### Database Handler
@@ -319,12 +345,41 @@ function callback(
     bytes input,
     bytes extraData
 ) external view {
-    bytes output = calculateOutput(...)
+    bytes output = calculateOutputForDB(...)
     return (
         output,
         response == true
     )
 }
+```
+
+##### CALL
+
+```solidity
+setValueWithConfig(
+    "avatar", 
+    "https://namesys.xyz/logo.png",
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        [
+            "https://db.namesys.xyz", // Database 1   
+            "https://db.notapi.dev", // Database 2
+        ], 
+        [
+            "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Ethereum Signer 1
+            "0x75b6B7CEE3719850d344f65b24Db4B7433Ca6ee4" // Ethereum Signer 2
+        ],
+        [
+            "0xa6f5e0d78f51c6a80db0ade26cd8bb490e59fc4f24e38845a6d7718246f139d8712be7a3421004a3b12def473d5b9b0d83a0899fb736200a915a1648229cf5e21b", // Approval Signature 1
+            "0x8d591768f97f950d1c2cb8a51e4f8718cd154d07e0b60ec955202ac478c45b6f3b745ee136276cbfc4a7c1d7c7cdd0a8e8921395b60c556f0c4857ead0447e351c" // Approval Signature 2
+        ],
+        []
+    ]
+)
 ```
 
 ### Decentralised Storage Handler
@@ -391,12 +446,44 @@ function callback(
     bytes input,
     bytes extraData
 ) external view {
-    bytes output = calculateOutput(...)
+    bytes output = calculateOutputForXY(...)
     return (
         output,
         response == true
     )
 }
+```
+
+##### CALL
+
+```solidity
+setValueWithConfig(
+    "avatar", 
+    "https://namesys.xyz/logo.png",
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        [
+            "https://ipns.namesys.xyz", // IPFS-NS Write Gateway    
+            "https://arweave.notapi.dev", // Arweave-NS Write Gateway
+        ], 
+        [
+            "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Ethereum Signer for IPFS
+            "0x1CFe432f336cdCAA3836f75A303459E61077068C" // Ethereum Signer for Arweave
+        ],
+        [
+            "0xa6f5e0d78f51c6a80db0ade26cd8bb490e59fc4f24e38845a6d7718246f139d8712be7a3421004a3b12def473d5b9b0d83a0899fb736200a915a1648229cf5e21b", // Approval Signature for IPFS
+            "0xf4e42fa7d1125fc149f29ed437e8cbbdac7e31bb493299e03df4d8cfd069c9a96bb12f6186e79ed6bc6e740086a67c0da022ffcd84ef50abf6c0e4f83d53a62d1c" // Approval Signature for Arweave
+        ],
+        [
+            "0xa74f6d477c01189834a56b52c8189d6fb228d40e17ef0b255b36848f1432f0bc35b1cf4a2f5390a8aef6c72665b752907be6a979a3ff180d9c13c7983df5d9c2", // Hex-encoded IPNS signature over ed25519 curve; 
+            "8a055b79515356324f68c18071b22085607d4f37577d53fe5c5c2b0ec9769ef1e70a5bc53f9fe901051e493a216a02ae7952a62488e26fa9547e504af01ef25cd904d853ea409fdf23bec0929caae4926d5e8e5353b4663880a" // Hex-encoded arweave signature over ed25519 curve; requires casting to base64 by gateway
+        ]
+    ]
+)
 ```
 
 ### Nested Handlers
