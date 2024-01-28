@@ -53,11 +53,13 @@ error StorageHandledBy__(...)
 // Generic function in a contract
 function setValue(
     bytes32 key, 
-    bytes32 value
+    bytes32 value,
+    config config, // Metadata pertaining to storage handler __
 ) external {
-    // Defer another write call to storage  handler
+    // Defer another write call to storage handler
     revert StorageHandledBy__(
         this.callback.selector, 
+        config config,
         ...
     )
 }
@@ -85,29 +87,31 @@ In pseudo-code, interdependent and nested CCIP-Write deferral looks like:
 error StorageHandledByX1(
     bytes input, 
     address sender, 
+    config config, // Metadata pertaining to storage handler X1
     bytes callData, 
     bytes4 callback, 
     bytes extraData,
-    ...
 )
 error StorageHandledByX2(
     bytes input, 
     address sender, 
+    config config, // Metadata pertaining to storage handler X2
     bytes callData, 
     bytes4 callback, 
     bytes extraData,
-    ...
 )
 
 // Generic function in a contract
 function setValue(
     bytes32 key, 
-    bytes32 value
+    bytes32 value,
+    config config,
 ) external {
     // Defer write call to X1 handler
     revert StorageHandledByX1(
         input,
         address(this),
+        config config,
         abi.encodePacked(value),
         this.callback.selector,
         extraData,
@@ -126,6 +130,7 @@ function callback(
     revert StorageHandledByX2(
         output,
         address(this),
+        config config,
         abi.encode(puke),
         this.callback2.selector,
         extraData2,
@@ -144,6 +149,7 @@ function callback2(
     revert StorageHandledByX3(
         output2,
         address(this),
+        config config,
         abi.encode(puke2),
         this.callback3.selector,
         extraData3,
@@ -156,6 +162,25 @@ function callback3(...) external view {
     ...
     return
 }
+```
+
+### Config Interface
+
+```solidity
+// Type of config
+type config = [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] 
+// Data inside config
+bytes[] config = [
+        coordinates, // List of string formatted coordinates
+        authorities, // List of string formatted authorities
+        approvals, // List of string formatted approvals
+        containers // List of string formatted containers
+    ]
 ```
 
 ### L2 Handler
@@ -241,7 +266,7 @@ revert StorageHandledByDB(
         bytes[], 
         bytes[]
     ] [
-        urls, // List of URLs handling writing to database
+        urls, // List of URLs handling writing to databases
         signers || [], // List of addresses signing the calldata
         approvals || [], // List of signatures approving the signers
         [] // MUST be empty for centralised databases
