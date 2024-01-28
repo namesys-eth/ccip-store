@@ -54,6 +54,8 @@ where `input` and `output` are the aforementioned arguments responsible for inte
 
 It must be noted that a globally consistent and interdependent input and output interface is not sufficient to ensure that all handlers will work seemlessly in real-world conditions when nested in arbitrary order. For instance, it may be that one of the handlers has an excessively long return time, either by construction or due to an internal error, which results in a timeout before the handler returns a value. In order to handle such cases, `input` and `output` payloads must include the nominal TTL values encoded in metadata; such information will allow subsequent handlers in the stack to adjust their timeouts accordingly.
 
+![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/nested.png)
+
 ### L1 Handler
 
 
