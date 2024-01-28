@@ -1,7 +1,7 @@
 ---
 eip:
 title: "Off-Chain Data Write Protocol"
-description: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised (and mutable) storages
+description: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised & mutable storages
 author: (@sshmatrix), (@0xc0de4c0ffee), (@arachnid)
 discussions-to:
 status: Draft
@@ -162,7 +162,8 @@ function callback3(...) external view {
 ```solidity
 revert StorageHandledByL2(
     bytes input,
-    address address(this),
+    address sender,
+    [string[], address[], bytes[], bytes[]] config,
     bytes calldata,
     bytes4 this.callback.selector,
     bytes extradata
@@ -174,18 +175,30 @@ function callback(...) external view {
 }
 ```
 
-#### Example
+#### EXAMPLE
 ```solidity
-function setValue(
+function setValueWithConfig(
     bytes32 key, 
-    bytes32 value
+    bytes32 value,
+    [string[], address[], bytes[], bytes[]] [
+            [..., ChainID_1, ChainID_2], 
+            [..., L2Contract_1, L2Contract_2],
+            [..., bytes(0), bytes(0)],
+            [..., bytes(0), bytes(0)]
+        ],
 ) external {
     revert StorageHandledByL2(
-        bytes input,
-        address msg.sender,
-        bytes abi.encodePacked(value),
-        bytes4 this.callback.selector,
-        bytes extradata
+        input,
+        msg.sender,
+        [
+            [..., ChainID_1, ChainID_2], 
+            [..., L2Contract_1, L2Contract_2],
+            [..., bytes(0), bytes(0)],
+            [..., bytes(0), bytes(0)]
+        ],
+        abi.encodePacked(value),
+        this.callback.selector,
+        extradata
     )
 }
 
@@ -203,19 +216,122 @@ function callback(
 ```
 
 ### Database Handler
+```solidity
+revert StorageHandledByDB(
+    bytes input,
+    address msg.sender,
+    [string[], address[], bytes[], bytes[]] config,
+    bytes calldata,
+    bytes4 this.callback.selector,
+    bytes extradata
+)
 
+function callback(...) external view {
+    ...
+    return
+}
+```
 
-#### Example
+#### EXAMPLE
+```solidity
+function setValueWithConfig(
+    bytes32 key, 
+    bytes32 value,
+    [string[], address[], bytes[], bytes[]] [
+        urls,
+        signers,
+        approvals,
+        [..., bytes(0)]
+    ],
+) external {
+    revert StorageHandledByDB(
+        input,
+        msg.sender,
+        abi.encodePacked(value),
+        [
+            urls, 
+            signers,
+            approvals,
+            [..., bytes(0)]
+        ],
+        this.callback.selector,
+        extradata
+    )
+}
+
+function callback(
+    bytes response,
+    bytes input,
+    bytes extradata
+) external view {
+    bytes output = calculateOutput(...)
+    return (
+        output,
+        response == true
+    )
+}
+```
 
 ### Decentralised Storage Handler
+```solidity
+revert StorageHandledByXY(
+    bytes input,
+    address msg.sender,
+    [string[], address[], bytes[], bytes[]] config,
+    bytes calldata,
+    bytes4 this.callback.selector,
+    bytes extradata
+)
 
-#### Example with IPFS
+function callback(...) external view {
+    ...
+    return
+}
+```
 
-#### Example with Arweave
+#### EXAMPLE
+```solidity
+function setValueWithConfig(
+    bytes32 key, 
+    bytes32 value,
+    [string[], address[], bytes[], bytes[]] [
+        urls,
+        signers,
+        approvals,
+        namespaces
+    ],
+) external {
+    revert StorageHandledByXY(
+        input,
+        msg.sender,
+        abi.encodePacked(value),
+        [
+            urls, 
+            signers
+            approvals,
+            namespaces
+        ],
+        this.callback.selector,
+        extradata
+    )
+}
 
-### Stacking Handlers
+function callback(
+    bytes response,
+    bytes input,
+    bytes extradata
+) external view {
+    bytes output = calculateOutput(...)
+    return (
+        output,
+        response == true
+    )
+}
+```
 
-#### Example
+### Nested Handlers
+
+#### EXAMPLE
 
 ### Events
 

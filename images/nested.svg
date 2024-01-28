@@ -26,7 +26,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -252,16 +252,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.74324618"
-     inkscape:cx="942.20362"
-     inkscape:cy="499.48076"
+     inkscape:zoom="0.34862569"
+     inkscape:cx="804.66194"
+     inkscape:cy="667.40839"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1027"
+     inkscape:window-width="1470"
+     inkscape:window-height="891"
      inkscape:window-x="-4"
-     inkscape:window-y="25"
+     inkscape:window-y="37"
      inkscape:window-maximized="0"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -340,7 +340,7 @@
        style="font-size:14.11110000000000042px;line-height:1.25;font-family:Palatino;-inkscape-font-specification:Palatino;font-variant-ligatures:none;text-align:center;letter-spacing:-0.36777100000000001px;white-space:pre;shape-inside:url(#rect1200);fill:#ffffff;fill-opacity:1;"
        transform="matrix(0.42828728,0,0,1,5.7580171,0)" />
     <rect
-       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:0.295311;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000;fill-opacity:1"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:0.295311;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000;fill-opacity:1;opacity:1"
        id="rect1080"
        width="213.65604"
        height="251.60185"
