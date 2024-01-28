@@ -32,7 +32,7 @@ Writing to a variety of centralised and decentralised storages is a broader obje
 EIP-5559 was the first step toward such a tolerant 'CCIP-Write' protocol which outlined how write deferrals could be made to L2 and centralised databases. This proposal extends the previous attempt by including secure write deferrals to decentralised storages, while also updating previous specifications with securer alternatives for writing to centralised databases.
 
 ### Curious Case of Decentralised Storages
-Decentralised storages powered by cryptographic protocols are unique in their diversity of architectures compared to centralised databases or L2 chains, both of which have canonical architectures in place. For instance, write calls to L2 chains can be generalised through the use of `ChainID` since the `calldata` remains the same; write deferral in this case is as simple as routing the call to another contract on an L2 chain. There is no need to incorporate any additional security requirement(s) since the L2 chain ensures data integrity locally, while the global integrity can be proven by employing a state verifier scheme (e.g. EVM-Gateway) during CCIP-Read calls. 
+Decentralised storages powered by cryptographic protocols are unique in their diversity of architectures compared to centralised databases or L2 chains, both of which have canonical architectures in place. For instance, write calls to L2 chains can be generalised through the use of `ChainID` since the `callData` remains the same; write deferral in this case is as simple as routing the call to another contract on an L2 chain. There is no need to incorporate any additional security requirement(s) since the L2 chain ensures data integrity locally, while the global integrity can be proven by employing a state verifier scheme (e.g. EVM-Gateway) during CCIP-Read calls. 
 
 Decentralised storages on the other hand, do not typically have EVM-like environments and may have their own unique content addressing requirements. For example, IPFS, Arweave, Swarm etc all have unique content identification schemes as well as their own specific fine-tunings and/or choices of cryptographic primitives, besides supporting their own cryptographically secured namespaces. This significant and diverse deviation from EVM-like architecture results in an equally diverse set of requirements during both the write deferral operation as well as the subsequent state verifying stage. The resolution of this precise issue is detailed in the following text in an attempt towards a global CCIP-Write specification.
 
@@ -85,17 +85,17 @@ In pseudo-code, interdependent and nested CCIP-Write deferral looks like:
 error StorageHandledByX1(
     bytes input, 
     address sender, 
-    bytes calldata, 
+    bytes callData, 
     bytes4 callback, 
-    bytes extradata,
+    bytes extraData,
     ...
 )
 error StorageHandledByX2(
     bytes input, 
     address sender, 
-    bytes calldata, 
+    bytes callData, 
     bytes4 callback, 
-    bytes extradata,
+    bytes extraData,
     ...
 )
 
@@ -110,7 +110,7 @@ function setValue(
         address(this),
         abi.encodePacked(value),
         this.callback.selector,
-        extradata,
+        extraData,
         ...
     )
 }
@@ -119,16 +119,16 @@ function setValue(
 function callback(
     bytes response, 
     bytes input, 
-    bytes extradata
+    bytes extraData
 ) external view {
-    (bytes output, bytes puke) = calculateOutput(response, input, extradata)
+    (bytes output, bytes puke) = calculateOutput(response, input, extraData)
     // Defer another write call to X2 handler
     revert StorageHandledByX2(
         output,
         address(this),
         abi.encode(puke),
         this.callback2.selector,
-        extradata2,
+        extraData2,
         ...
     ) || return (output, puke, ...)
 } 
@@ -137,16 +137,16 @@ function callback(
 function callback2(
     bytes response2, 
     bytes input2, 
-    bytes extradata2
+    bytes extraData2
 ) external view {
-    (bytes output2, bytes puke2) = calculateOutput(response2, input2, extradata2)
+    (bytes output2, bytes puke2) = calculateOutput(response2, input2, extraData2)
     // Defer another write call to X3 handler
     revert StorageHandledByX3(
         output2,
         address(this),
         abi.encode(puke2),
         this.callback3.selector,
-        extradata3,
+        extraData3,
         ...
     ) || return (output2, puke2, ...)
 } 
@@ -163,10 +163,20 @@ function callback3(...) external view {
 revert StorageHandledByL2(
     bytes input,
     address sender,
-    [string[], address[], bytes[], bytes[]] config,
-    bytes calldata,
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        chains, // List of string formatted ChainID values
+        contracts, // List of contracts on L2
+        [], // MUST be empty for L2 storage handler
+        [] // MUST be empty for L2 storage handler
+    ],
+    bytes callData,
     bytes4 this.callback.selector,
-    bytes extradata
+    bytes extraData
 )
 
 function callback(...) external view {
@@ -180,32 +190,37 @@ function callback(...) external view {
 function setValueWithConfig(
     bytes32 key, 
     bytes32 value,
-    [string[], address[], bytes[], bytes[]] [
-            [..., ChainID_1, ChainID_2], 
-            [..., L2Contract_1, L2Contract_2],
-            [..., bytes(0), bytes(0)],
-            [..., bytes(0), bytes(0)]
-        ],
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        chains, 
+        contracts,
+        [],
+        []
+    ],
 ) external {
     revert StorageHandledByL2(
         input,
         msg.sender,
         [
-            [..., ChainID_1, ChainID_2], 
-            [..., L2Contract_1, L2Contract_2],
-            [..., bytes(0), bytes(0)],
-            [..., bytes(0), bytes(0)]
+            chains,
+            contracts,
+            [],
+            []
         ],
         abi.encodePacked(value),
         this.callback.selector,
-        extradata
+        extraData
     )
 }
 
 function callback(
     bytes response,
     bytes input,
-    bytes extradata
+    bytes extraData
 ) external view {
     bytes output = calculateOutput(...)
     return (
@@ -220,10 +235,20 @@ function callback(
 revert StorageHandledByDB(
     bytes input,
     address msg.sender,
-    [string[], address[], bytes[], bytes[]] config,
-    bytes calldata,
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        urls, // List of URLs handling writing to database
+        signers || [], // List of addresses signing the calldata
+        approvals || [], // List of signatures approving the signers
+        [] // MUST be empty for centralised databases
+    ],
+    bytes callData,
     bytes4 this.callback.selector,
-    bytes extradata
+    bytes extraData
 )
 
 function callback(...) external view {
@@ -237,11 +262,16 @@ function callback(...) external view {
 function setValueWithConfig(
     bytes32 key, 
     bytes32 value,
-    [string[], address[], bytes[], bytes[]] [
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
         urls,
         signers,
         approvals,
-        [..., bytes(0)]
+        []
     ],
 ) external {
     revert StorageHandledByDB(
@@ -252,17 +282,17 @@ function setValueWithConfig(
             urls, 
             signers,
             approvals,
-            [..., bytes(0)]
+            []
         ],
         this.callback.selector,
-        extradata
+        extraData
     )
 }
 
 function callback(
     bytes response,
     bytes input,
-    bytes extradata
+    bytes extraData
 ) external view {
     bytes output = calculateOutput(...)
     return (
@@ -277,10 +307,20 @@ function callback(
 revert StorageHandledByXY(
     bytes input,
     address msg.sender,
-    [string[], address[], bytes[], bytes[]] config,
-    bytes calldata,
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        urls, // List of URLs handling writing to off-chain storages
+        signers || [], // List of addresses signing the calldata
+        approvals || [], // List of signatures approving the signers
+        namespaces || [] // List of access signatures for native namespaces
+    ],
+    bytes callData,
     bytes4 this.callback.selector,
-    bytes extradata
+    bytes extraData
 )
 
 function callback(...) external view {
@@ -294,7 +334,12 @@ function callback(...) external view {
 function setValueWithConfig(
     bytes32 key, 
     bytes32 value,
-    [string[], address[], bytes[], bytes[]] [
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
         urls,
         signers,
         approvals,
@@ -312,14 +357,14 @@ function setValueWithConfig(
             namespaces
         ],
         this.callback.selector,
-        extradata
+        extraData
     )
 }
 
 function callback(
     bytes response,
     bytes input,
-    bytes extradata
+    bytes extraData
 ) external view {
     bytes output = calculateOutput(...)
     return (
