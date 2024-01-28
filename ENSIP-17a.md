@@ -176,10 +176,10 @@ type config = [
     ] 
 // Data inside config
 bytes[] config = [
-        coordinates, // List of string formatted coordinates
-        authorities, // List of string formatted authorities
-        approvals, // List of string formatted approvals
-        containers // List of string formatted containers
+        coordinates, // List of string formatted coordinates; can never be empty
+        authorities || [], // List of string formatted authorities; can be empty for unsafe record storage in off-chain databases or decentralised storages, or for on-chain signers
+        approvals || [], // List of string formatted approvals; can be empty for unsafe record storage in off-chain databases or decentralised storages
+        containers || [] // List of string formatted containers; usually empty except for decentralised storages wrapped in namespaces
     ]
 ```
 
