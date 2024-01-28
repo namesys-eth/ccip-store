@@ -52,8 +52,6 @@ The condition of interdependence on storage handlers requires that each handler 
 
 where `input` and `output` are the aforementioned arguments responsible for interdependent behaviour. We'll specify the optimal encoding for input and output bytes at a later stage, although both payloads must have the exact same encoding and may include not only data but also metadata governing the behaviour of subsequent asynchronous calls to nested handlers.
 
-It must be noted that a globally consistent and interdependent input and output interface is not sufficient to ensure that all handlers will work seemlessly in real-world conditions when nested in arbitrary order. For instance, it may be that one of the handlers has an excessively long return time, either by construction or due to an internal error, which results in a timeout before the handler returns a value. In order to handle such cases, `input` and `output` payloads must include the nominal TTL values encoded in metadata; such information will allow subsequent handlers in the stack to adjust their timeouts accordingly.
-
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/nested.png)
 
 ### L1 Handler
