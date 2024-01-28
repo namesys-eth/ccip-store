@@ -1,14 +1,14 @@
 ---
-eip: XXX1
+eip:
 title: "Off-Chain Data Write Protocol"
-description: The 'Off-Chain Data Write Protocol' is an update to 'Cross-Chain Write Deferral Protocol' (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised (and mutable) storages
-author: Avneet Singh (@sshmatrix), Code Coffee (@0xc0de4c0ffee), Nick Johnson (@arachnid)
-discussions-to: https://ethereum-magicians.org/t/some-discussion/99998
+description: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised (and mutable) storages
+author: (@sshmatrix), (@0xc0de4c0ffee), (@arachnid)
+discussions-to:
 status: Draft
 type: Standards Track
 category: ERC
-created: 2024-00-00
-requires: 000
+created:
+requires:
 ---
 
 ## Abstract
@@ -36,9 +36,9 @@ Decentralised storages powered by cryptographic protocols are unique in their di
 
 Decentralised storages on the other hand, do not typically have EVM-like environments and may have their own unique content addressing requirements. For example, IPFS, Arweave, Swarm etc all have unique content identification schemes as well as their own specific fine-tunings and/or choices of cryptographic primitives, besides supporting their own cryptographically secured namespaces. This significant and diverse deviation from EVM-like architecture results in an equally diverse set of requirements during both the write deferral operation as well as the subsequent state verifying stage. The resolution of this precise issue is detailed in the following text in an attempt towards a global CCIP-Write specification.
 
-In contrast to EIP-5559, this proposal allows for multiple storage handlers to be stacked asynchronously in arbitrary order allowing for maximal interdependence. This feature of interdependence is necessary for highly optimised protocols which employ a mix of two or more storage types at their core. For instance, a service may choose to index cheaply on an L2 while storing the data off-chain entirely; stack-enabled interdependent handlers can achieve such functionality trivially. 
+In contrast to EIP-5559, this proposal allows for multiple storage handlers to be nested asynchronously in arbitrary order allowing for maximal interdependence. This feature of interdependence is necessary for highly optimised protocols which employ a mix of two or more storage types at their core. For instance, a service may choose to index cheaply on an L2 while storing the data off-chain entirely; stack-enabled interdependent handlers can achieve such functionality trivially. 
 
-## Specification
+## Specification    
 ### Overview
 The following specification revolves around the structure and description of an arbitrary off-chain storage handler tasked with the responsibility of writing to an arbitrary storage. Similar to CCIP-Read, CCIP-Write protocol outlined herein comprises of 2 molecular parts: initial reversion with error event `StorageHandledBy__()`, which signals the deferral of write operation to the off-chain handler using events, and `callback()` function, which handles operations following the return of initial write deferral. `__` in `StorageHandledBy__` is reserved for two uppercased characters encoding the type of data handle, for example, `__` = `L2` for L2, `DB` for Database, `IP` for IPFS, `BZ` for Swarm, `AR` for Arweave etc; this 2-character identification scheme can accommodate 1000+ different storage types.
 
@@ -50,9 +50,9 @@ The condition of interdependence on storage handlers requires that each handler 
 - `error StorageHandledBy__(bytes input, ...)`, in addition to 
 - `function callback(bytes input, ...) returns (bytes memory output, ...)`, 
 
-where `input` and `output` are the aforementioned arguments responsible for interdependent behaviour. We'll specify the optimal encoding for input and output bytes at a later stage, although both payloads must have the exact same encoding and may include not only data but also metadata governing the behaviour of subsequent asynchronous calls to stacked handlers.
+where `input` and `output` are the aforementioned arguments responsible for interdependent behaviour. We'll specify the optimal encoding for input and output bytes at a later stage, although both payloads must have the exact same encoding and may include not only data but also metadata governing the behaviour of subsequent asynchronous calls to nested handlers.
 
-It must be noted that a globally consistent and interdependent input and output interface is not sufficient to ensure that all handlers will work seemlessly in real-world conditions when stacked in arbitrary order. For instance, it may be that one of the handlers has an excessively long return time, either by construction or due to an internal error, which results in a timeout before the handler returns a value. In order to handle such cases, `input` and `output` payloads must include the nominal TTL values encoded in metadata; such information will allow subsequent handlers in the stack to adjust their timeouts accordingly.
+It must be noted that a globally consistent and interdependent input and output interface is not sufficient to ensure that all handlers will work seemlessly in real-world conditions when nested in arbitrary order. For instance, it may be that one of the handlers has an excessively long return time, either by construction or due to an internal error, which results in a timeout before the handler returns a value. In order to handle such cases, `input` and `output` payloads must include the nominal TTL values encoded in metadata; such information will allow subsequent handlers in the stack to adjust their timeouts accordingly.
 
 ### L1 Handler
 

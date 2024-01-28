@@ -1,14 +1,14 @@
 ---
-eip: XXX2
+eip:
 title: "Off-Chain Data Write Handler for Mutable Storages"
-description: This draft captures the functionings of a secure off-chain data write handler capable of writing to an arbitary non-EVM storage using EIP-XXX1
-author: Avneet Singh (@sshmatrix), Code Coffee (@0xc0de4c0ffee), Nick Johnson (@arachnid)
-discussions-to: https://ethereum-magicians.org/t/some-discussion/99999
+description: Core structure of a secure off-chain data write handler capable of writing to an arbitary non-EVM storage
+author: (@sshmatrix), (@0xc0de4c0ffee)
+discussions-to:
 status: Draft
 type: Standards Track
 category: ERC
-created: 2024-00-00
-requires: 000
+created:
+requires:
 ---
 
 ## Abstract
