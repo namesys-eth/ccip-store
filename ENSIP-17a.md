@@ -103,7 +103,7 @@ function setValue(
         input,
         address(this),
         abi.encodePacked(value),
-        address(this).callback.selector,
+        this.callback.selector,
         extradata,
         ...
     )
@@ -119,7 +119,7 @@ function callback(
         output,
         address(this),
         abi.encode(puke),
-        address(this).callback2.selector,
+        this.callback2.selector,
         extradata2,
         ...
     ) || return (output, puke, ...)
@@ -135,13 +135,16 @@ function callback2(
         output2,
         address(this),
         abi.encode(puke2),
-        address(this).callback3.selector,
+        this.callback3.selector,
         extradata3,
         ...
     ) || return (output2, puke2, ...)
 } 
 
-function callback3(...) external view {...}
+function callback3(...) external view {
+    ...
+    return
+}
 ```
 
 ### L1 Handler
