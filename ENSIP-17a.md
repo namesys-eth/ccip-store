@@ -55,6 +55,7 @@ function setValue(
     bytes32 key, 
     bytes32 value
 ) external {
+    // Defer another write call to storage  handler
     revert StorageHandledBy__(
         this.callback.selector, 
         ...
@@ -157,17 +158,52 @@ function callback3(...) external view {
 }
 ```
 
-### L1 Handler
-
-
-
-#### Example
-
 ### L2 Handler
+```solidity
+revert StorageHandledByL2(
+    bytes input,
+    address address(this),
+    bytes calldata,
+    bytes4 this.callback.selector,
+    bytes extradata
+)
+
+function callback(...) external view {
+    ...
+    return
+}
+```
 
 #### Example
+```solidity
+function setValue(
+    bytes32 key, 
+    bytes32 value
+) external {
+    revert StorageHandledByL2(
+        bytes input,
+        address msg.sender,
+        bytes abi.encodePacked(value),
+        bytes4 this.callback.selector,
+        bytes extradata
+    )
+}
+
+function callback(
+    bytes response,
+    bytes input,
+    bytes extradata
+) external view {
+    bytes output = calculateOutput(...)
+    return (
+        output,
+        response == true
+    )
+}
+```
 
 ### Database Handler
+
 
 #### Example
 
