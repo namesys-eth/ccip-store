@@ -44,6 +44,26 @@ The following specification revolves around the structure and description of an 
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/schematic.png)
 
+Following EIP-5559, a CCIP-Write deferral call to an arbitrary function `setValue(bytes32 key, bytes32 value)` can be described in pseudo-code as follows:
+
+```solidity
+error StorageHandledBy__(...)
+
+function setValue(
+    bytes32 key, 
+    bytes32 value
+) external {
+    revert StorageHandledBy__(
+        this.callback.selector, 
+        ...
+    )
+}
+
+function callback(bytes response, ...) external view {
+    return
+} 
+```
+
 ### Interdependence
 The condition of interdependence on storage handlers requires that each handler must have a global argument in input as well as the return statement. This requires that `StorageHandledBy__()` must be of the form
 
@@ -54,7 +74,78 @@ where `input` and `output` are the aforementioned arguments responsible for inte
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/nested.png)
 
+In pseudo-code, interdependent and nested CCIP-Write deferral looks like:
+
+```solidity
+error StorageHandledByX1(
+    bytes input, 
+    address sender, 
+    bytes calldata, 
+    bytes4 callback, 
+    bytes extradata,
+    ...
+)
+
+error StorageHandledByX2(
+    bytes input, 
+    address sender, 
+    bytes calldata, 
+    bytes4 callback, 
+    bytes extradata,
+    ...
+)
+
+function setValue(
+    bytes32 key, 
+    bytes32 value
+) external {
+    revert StorageHandledByX1(
+        input,
+        address(this),
+        abi.encodePacked(value),
+        address(this).callback.selector,
+        extradata,
+        ...
+    )
+}
+
+function callback(
+    bytes response, 
+    bytes input, 
+    bytes extradata
+) external view {
+    (bytes output, bytes puke) = calculateOutput(response, input, extradata)
+    revert StorageHandledByX2(
+        output,
+        address(this),
+        abi.encode(puke),
+        address(this).callback2.selector,
+        extradata2,
+        ...
+    ) || return (output, puke, ...)
+} 
+
+function callback2(
+    bytes response2, 
+    bytes input2, 
+    bytes extradata2
+) external view {
+    (bytes output2, bytes puke2) = calculateOutput(response2, input2, extradata2)
+    revert StorageHandledByX3(
+        output2,
+        address(this),
+        abi.encode(puke2),
+        address(this).callback3.selector,
+        extradata3,
+        ...
+    ) || return (output2, puke2, ...)
+} 
+
+function callback3(...) external view {...}
+```
+
 ### L1 Handler
+
 
 
 #### Example
