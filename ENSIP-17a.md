@@ -482,11 +482,11 @@ setValueWithConfig(
             abi.encodePacked(
                 "0xa74f6d477c01189834a56b52c8189d6fb228d40e17ef0b255b36848f1432f0bc35b1cf4a2f5390a8aef6c72665b752907be6a979a3ff180d9c13c7983df5d9c2", // Hex-encoded IPNS signature over ed25519 curve
                 bytes32(1) // Index or sequence or version number required by IPNS signature payloads; give bytes(0) for empty value
-            ),
+            ), // Requires casting to bytes-like payload by gateway for IPFS-NS
             abi.encodePacked(
-                "0x8a055b79515356324f68c18071b22085607d4f37577d53fe5c5c2b0ec9769ef1e70a5bc53f9fe901051e493a216a02ae7952a62488e26fa9547e504af01ef25cd904d853ea409fdf23bec0929caae4926d5e8e5353b4663880a", // Hex-encoded arweave signature over ed25519 curve
+                "0x8a055b79515356324f68c18071b22085607d4f37577d53fe5c5c2b0ec9769ef1e70a5bc53f9fe901051e493a216a02ae7952a62488e26fa9547e504af01ef25cd904d853ea409fdf23bec0929caae4926d5e8e5353b4663880a", // Hex-encoded Arweave signature over ed25519 curve
                 bytes32(0) // Not required for Arweave
-            ) // Requires casting back to base64 by gateway
+            ) // Requires casting back to base64 by gateway for Arweave
         ]
     ]
 )
