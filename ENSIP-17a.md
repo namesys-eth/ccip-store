@@ -47,8 +47,10 @@ The following specification revolves around the structure and description of an 
 Following EIP-5559, a CCIP-Write deferral call to an arbitrary function `setValue(bytes32 key, bytes32 value)` can be described in pseudo-code as follows:
 
 ```solidity
+// Define Revert Event
 error StorageHandledBy__(...)
 
+// Generic function in a contract
 function setValue(
     bytes32 key, 
     bytes32 value
@@ -59,6 +61,7 @@ function setValue(
     )
 }
 
+// Callback recieving status of write call
 function callback(bytes response, ...) external view {
     return
 } 
@@ -77,6 +80,7 @@ where `input` and `output` are the aforementioned arguments responsible for inte
 In pseudo-code, interdependent and nested CCIP-Write deferral looks like:
 
 ```solidity
+// Define Revert Events for storages X1 and X2
 error StorageHandledByX1(
     bytes input, 
     address sender, 
@@ -85,7 +89,6 @@ error StorageHandledByX1(
     bytes extradata,
     ...
 )
-
 error StorageHandledByX2(
     bytes input, 
     address sender, 
@@ -95,10 +98,12 @@ error StorageHandledByX2(
     ...
 )
 
+// Generic function in a contract
 function setValue(
     bytes32 key, 
     bytes32 value
 ) external {
+    // Defer write call to X1 handler
     revert StorageHandledByX1(
         input,
         address(this),
@@ -109,12 +114,14 @@ function setValue(
     )
 }
 
+// Callback recieving response from X1
 function callback(
     bytes response, 
     bytes input, 
     bytes extradata
 ) external view {
     (bytes output, bytes puke) = calculateOutput(response, input, extradata)
+    // Defer another write call to X2 handler
     revert StorageHandledByX2(
         output,
         address(this),
@@ -125,12 +132,14 @@ function callback(
     ) || return (output, puke, ...)
 } 
 
+// Callback recieving response from X2
 function callback2(
     bytes response2, 
     bytes input2, 
     bytes extradata2
 ) external view {
     (bytes output2, bytes puke2) = calculateOutput(response2, input2, extradata2)
+    // Defer another write call to X3 handler
     revert StorageHandledByX3(
         output2,
         address(this),
@@ -141,6 +150,7 @@ function callback2(
     ) || return (output2, puke2, ...)
 } 
 
+// Callback recieving response from X3
 function callback3(...) external view {
     ...
     return
