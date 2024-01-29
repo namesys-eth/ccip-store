@@ -255,7 +255,7 @@ function callback(
 }
 ```
 
-##### CALL
+#### CALL an L2
 
 ```solidity
 setValueWithConfig(
@@ -353,7 +353,7 @@ function callback(
 }
 ```
 
-##### CALL
+#### CALL a DB
 
 ```solidity
 setValueWithConfig(
@@ -393,10 +393,10 @@ revert StorageHandledByXY(
         bytes[], 
         bytes[]
     ] [
-        urls, // List of URLs handling writing to off-chain storages
+        urls, // List of URLs handling write operations to off-chain storages
         signers || [], // List of addresses signing the calldata
         approvals || [], // List of signatures approving the signers
-        namespaces || [] // List of access signatures for native namespaces
+        accessories || [] // List of access signatures for native namespaces
     ],
     bytes callData,
     bytes4 this.callback.selector,
@@ -423,7 +423,7 @@ function setValueWithConfig(
         urls,
         signers,
         approvals,
-        namespaces
+        accessories
     ],
 ) external {
     revert StorageHandledByXY(
@@ -434,7 +434,7 @@ function setValueWithConfig(
             urls, 
             signers
             approvals,
-            namespaces
+            accessories
         ],
         this.callback.selector,
         extraData
@@ -454,7 +454,7 @@ function callback(
 }
 ```
 
-##### CALL
+#### CALL IPNS and ArNS
 
 ```solidity
 setValueWithConfig(
@@ -493,18 +493,86 @@ setValueWithConfig(
 ```
 
 ### Nested Handlers
-
 #### EXAMPLE
+```solidity
+function setValueWithConfig(
+    bytes32 key, 
+    bytes32 value,
+    [
+        string[], 
+        address[], 
+        bytes[], 
+        bytes[]
+    ] [
+        urls,
+        signers,
+        approvals,
+        []
+    ],
+) external {
+    // 1st deferral
+    revert StorageHandledByDB(
+        input,
+        msg.sender,
+        abi.encodePacked(value),
+        [
+            urls, 
+            signers,
+            approvals,
+            []
+        ],
+        this.callbackDB.selector,
+        extraData
+    )
+}
+
+// Get response after 1st deferral and post-process
+function callbackDB(
+    bytes response,
+    bytes input,
+    bytes extraData
+) external view {
+    // Calculate output and access signatures for XY's namespaces
+    (bytes output, bytes accessories) = calculateOutputForDB(...)
+    // 2nd deferral
+    revert StorageHandledByXY(
+        output,
+        msg.sender,
+        abi.encodePacked(value),
+        [
+            urls, 
+            signers
+            approvals,
+            accessories,
+        ],
+        this.callbackXY.selector,
+        extraData
+    )
+}
+
+// Get response after 2nd deferral and post-process
+function callbackXY(
+    bytes response,
+    bytes input,
+    bytes extraData
+) external view {
+    // Calculate final output
+    bytes output = calculateOutputForXY(...)
+    // Final return
+    return (
+        output,
+        response == true
+    )
+}
+```
 
 ### Events
-
+`TBA`
 ### Interface
-
+`TBA`
 ## Backwards Compatibility
-
+`TBA`
 ## Security Considerations
-
-###
-
+`TBA`
 ## Copyright
 Copyright and related rights waived via [CC0](../LICENSE.md).
