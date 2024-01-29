@@ -71,12 +71,12 @@ function callback(bytes response, ...) external view {
 ```
 
 ### Interdependence
-The condition of interdependence on storage handlers requires that each handler must have a global argument in input as well as the return statement. This requires that `StorageHandledBy__()` must be of the form
+The condition of interdependence on storage handlers requires that each handler must have a global `config` interface in the input argument as well as the return statement. This requires that `StorageHandledBy__()` must be of the form
 
-- `error StorageHandledBy__(bytes input, ...)`, in addition to 
-- `function callback(bytes input, ...) returns (bytes memory output, ...)`, 
+- `error StorageHandledBy__(bytes config, ...)`, in addition to 
+- `function callback(bytes config, ...) returns (bytes memory newConfig, ...)`, 
 
-where `input` and `output` are the aforementioned arguments responsible for interdependent behaviour. We'll specify the optimal encoding for input and output bytes at a later stage, although both payloads must have the exact same encoding and may include not only data but also metadata governing the behaviour of subsequent asynchronous calls to nested handlers.
+where `config` and `newConfig` are responsible for the interdependent behaviour. We'll specify the optimal typing and encoding for these two interfaces in the next section, although both payloads must have the exact same encoding and may include not only data but also metadata governing the behaviour of subsequent asynchronous calls to nested handlers.
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/nested.png)
 
@@ -85,15 +85,13 @@ In pseudo-code, interdependent and nested CCIP-Write deferral looks like:
 ```solidity
 // Define Revert Events for storages X1 and X2
 error StorageHandledByX1(
-    bytes input, 
     address sender, 
     config config, // Metadata pertaining to storage handler X1
     bytes callData, 
     bytes4 callback, 
     bytes extraData,
 )
-error StorageHandledByX2(
-    bytes input, 
+error StorageHandledByX2( 
     address sender, 
     config config, // Metadata pertaining to storage handler X2
     bytes callData, 
@@ -109,7 +107,6 @@ function setValue(
 ) external {
     // Defer write call to X1 handler
     revert StorageHandledByX1(
-        input,
         address(this),
         config config,
         abi.encodePacked(value),
@@ -122,39 +119,37 @@ function setValue(
 // Callback receiving response from X1
 function callback(
     bytes response, 
-    bytes input, 
+    config config, 
     bytes extraData
 ) external view {
-    (bytes output, bytes puke, config config2) = calculateOutputForX1(response, input, extraData)
+    (config config2, bytes puke, bytes extraData2) = calculateOutputForX1(response, config, extraData)
     // Defer another write call to X2 handler
     revert StorageHandledByX2(
-        output,
         address(this),
         config config2,
         abi.encode(puke),
         this.callback2.selector,
         extraData2,
         ...
-    ) || return (output, puke, ...)
+    ) || return (config2, puke, ...)
 } 
 
 // Callback receiving response from X2
 function callback2(
     bytes response2, 
-    bytes input2, 
+    config config2, 
     bytes extraData2
 ) external view {
-    (bytes output2, bytes puke2, config config3) = calculateOutputForX2(response2, input2, extraData2)
+    (config config3, bytes puke2, bytes extraData2) = calculateOutputForX2(response2, config2, extraData2)
     // Defer another write call to X3 handler
     revert StorageHandledByX3(
-        output2,
         address(this),
         config config3,
         abi.encode(puke2),
         this.callback3.selector,
         extraData3,
         ...
-    ) || return (output2, puke2, ...)
+    ) || return (config3, puke2, ...)
 } 
 
 // Callback receiving response from X3
@@ -197,7 +192,6 @@ L2 handler only requires the list of `ChainID` values and the corresponding cont
 
 ```solidity
 revert StorageHandledByL2(
-    bytes input,
     address sender,
     [
         string[], 
@@ -239,7 +233,6 @@ function setValueWithConfig(
     ],
 ) external {
     revert StorageHandledByL2(
-        input,
         msg.sender,
         [
             chains,
@@ -255,12 +248,12 @@ function setValueWithConfig(
 
 function callback(
     bytes response,
-    bytes input,
+    config config,
     bytes extraData
 ) external view {
-    bytes output = calculateOutputForL2(response, input, extraData)
+    bytes newConfig = calculateOutputForL2(response, config, extraData)
     return (
-        output,
+        newConfig,
         response == true
     )
 }
@@ -296,7 +289,6 @@ In the minimal version, a database handler only requires the list of URLs (`urls
 
 ```solidity
 revert StorageHandledByDB(
-    bytes input,
     address msg.sender,
     [
         string[], 
@@ -338,7 +330,6 @@ function setValueWithConfig(
     ],
 ) external {
     revert StorageHandledByDB(
-        input,
         msg.sender,
         abi.encodePacked(value),
         [
@@ -354,12 +345,12 @@ function setValueWithConfig(
 
 function callback(
     bytes response,
-    bytes input,
+    config config,
     bytes extraData
 ) external view {
-    bytes output = calculateOutputForDB(response, input, extraData)
+    bytes newConfig = calculateOutputForDB(response, config, extraData)
     return (
-        output,
+        newConfig,
         response == true
     )
 }
@@ -398,7 +389,6 @@ Decentralised storage handlers are the most advanced case and require an equival
 
 ```solidity
 revert StorageHandledByXY(
-    bytes input,
     address msg.sender,
     [
         string[], 
@@ -440,7 +430,6 @@ function setValueWithConfig(
     ],
 ) external {
     revert StorageHandledByXY(
-        input,
         msg.sender,
         abi.encodePacked(value),
         [
@@ -456,12 +445,12 @@ function setValueWithConfig(
 
 function callback(
     bytes response,
-    bytes input,
+    config config,
     bytes extraData
 ) external view {
-    bytes output = calculateOutputForXY(response, input, extraData)
+    bytes newConfig = calculateOutputForXY(response, config, extraData)
     return (
-        output,
+        newConfig,
         response == true
     )
 }
@@ -524,7 +513,6 @@ function setValueWithConfig(
 ) external {
     // 1st deferral
     revert StorageHandledByDB(
-        input,
         msg.sender,
         abi.encodePacked(value),
         [
@@ -541,18 +529,17 @@ function setValueWithConfig(
 // Get response after 1st deferral and post-process
 function callbackDB(
     bytes response,
-    bytes input,
+    config config,
     bytes extraData
 ) external view {
     // Calculate output and access signatures for XY's namespaces
     (
-        bytes output, 
+        bytes newExtraData, 
         bytes accessories, 
         config config
-    ) = calculateOutputForDB(response, input, extraData)
+    ) = calculateOutputForDB(response, config, extraData)
     // 2nd deferral
     revert StorageHandledByXY(
-        output,
         msg.sender,
         abi.encodePacked(value),
         [
@@ -562,21 +549,21 @@ function callbackDB(
             config.accessories,
         ],
         this.callbackXY.selector,
-        extraData
+        newExtraData
     )
 }
 
 // Get response after 2nd deferral and post-process
 function callbackXY(
     bytes response,
-    bytes input,
+    config config,
     bytes extraData
 ) external view {
     // Calculate final output
-    bytes output = calculateOutputForXY(response, input, extraData)
+    bytes newConfig = calculateOutputForXY(response, config, extraData)
     // Final return
     return (
-        output,
+        newConfig,
         response == true
     )
 }
