@@ -125,7 +125,7 @@ function callback(
     bytes input, 
     bytes extraData
 ) external view {
-    (bytes output, bytes puke) = calculateOutputForX1(response, input, extraData)
+    (bytes output, bytes puke, config config) = calculateOutputForX1(response, input, extraData)
     // Defer another write call to X2 handler
     revert StorageHandledByX2(
         output,
@@ -144,12 +144,12 @@ function callback2(
     bytes input2, 
     bytes extraData2
 ) external view {
-    (bytes output2, bytes puke2) = calculateOutputForX2(response2, input2, extraData2)
+    (bytes output2, bytes puke2, config config2) = calculateOutputForX2(response2, input2, extraData2)
     // Defer another write call to X3 handler
     revert StorageHandledByX3(
         output2,
         address(this),
-        config config,
+        config config2,
         abi.encode(puke2),
         this.callback3.selector,
         extraData3,
@@ -258,7 +258,7 @@ function callback(
     bytes input,
     bytes extraData
 ) external view {
-    bytes output = calculateOutputForL2(...)
+    bytes output = calculateOutputForL2(response, input, extraData)
     return (
         output,
         response == true
@@ -357,7 +357,7 @@ function callback(
     bytes input,
     bytes extraData
 ) external view {
-    bytes output = calculateOutputForDB(...)
+    bytes output = calculateOutputForDB(response, input, extraData)
     return (
         output,
         response == true
@@ -459,7 +459,7 @@ function callback(
     bytes input,
     bytes extraData
 ) external view {
-    bytes output = calculateOutputForXY(...)
+    bytes output = calculateOutputForXY(response, input, extraData)
     return (
         output,
         response == true
@@ -545,7 +545,11 @@ function callbackDB(
     bytes extraData
 ) external view {
     // Calculate output and access signatures for XY's namespaces
-    (bytes output, bytes accessories) = calculateOutputForDB(...)
+    (
+        bytes output, 
+        bytes accessories, 
+        config config
+    ) = calculateOutputForDB(response, input, extraData)
     // 2nd deferral
     revert StorageHandledByXY(
         output,
@@ -569,7 +573,7 @@ function callbackXY(
     bytes extraData
 ) external view {
     // Calculate final output
-    bytes output = calculateOutputForXY(...)
+    bytes output = calculateOutputForXY(response, input, extraData)
     // Final return
     return (
         output,
