@@ -64,7 +64,7 @@ function setValueWithConfig(
     )
 }
 
-// Callback recieving status of write call
+// Callback receiving status of write call
 function callback(bytes response, ...) external view {
     return
 } 
@@ -119,7 +119,7 @@ function setValue(
     )
 }
 
-// Callback recieving response from X1
+// Callback receiving response from X1
 function callback(
     bytes response, 
     bytes input, 
@@ -138,7 +138,7 @@ function callback(
     ) || return (output, puke, ...)
 } 
 
-// Callback recieving response from X2
+// Callback receiving response from X2
 function callback2(
     bytes response2, 
     bytes input2, 
@@ -157,7 +157,7 @@ function callback2(
     ) || return (output2, puke2, ...)
 } 
 
-// Callback recieving response from X3
+// Callback receiving response from X3
 function callback3(...) external view {
     ...
     return
