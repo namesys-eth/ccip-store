@@ -188,7 +188,7 @@ bytes[] config = [
         coordinates, // List of string-formatted coordinates, e.g. ChainID for L2, URL for off-chain storage etc; can never be empty
         authorities || [], // List of addresses of authorities; can be empty for unsafe record storage in off-chain databases or decentralised storages, or for on-chain signers
         approvals || [], // List of bytes-like signatures/approvals; can be empty for unsafe record storage in off-chain databases or decentralised storages
-        containers || [] // List of bytes-like access signatures for containers; usually empty except for decentralised storages wrapped in namespaces
+        accessories || [] // List of bytes-like access signatures for accessories; usually empty except for decentralised storages wrapped in namespaces
     ]
 ```
 
@@ -579,7 +579,9 @@ function callbackXY(
 ```
 
 ### Events
-`TBA`
+1. A public library must be maintained where each new storage handler supported by a native Protocol Improvement Proposal must register their `StorageHandledBy__()` identifier. This library could exist on-chain or off-chain; in the end such a list of `StorageHandledBy__()` identifiers must be the accepted standard for CCIP-Write infrastructure providers (similar to multiformats & multicodec table). If the 2-character space runs out, it can be extended to 3 or more characters without any fear of identifier collisions.
+
+2. Each `StorageHandledBy__()` provider should be supported with detailed docs of their infrastructure along with a Protocol Improvement Proposal.
 
 ### Interface
 `TBA`
