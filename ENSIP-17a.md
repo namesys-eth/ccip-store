@@ -125,12 +125,12 @@ function callback(
     bytes input, 
     bytes extraData
 ) external view {
-    (bytes output, bytes puke, config config) = calculateOutputForX1(response, input, extraData)
+    (bytes output, bytes puke, config config2) = calculateOutputForX1(response, input, extraData)
     // Defer another write call to X2 handler
     revert StorageHandledByX2(
         output,
         address(this),
-        config config,
+        config config2,
         abi.encode(puke),
         this.callback2.selector,
         extraData2,
@@ -144,12 +144,12 @@ function callback2(
     bytes input2, 
     bytes extraData2
 ) external view {
-    (bytes output2, bytes puke2, config config2) = calculateOutputForX2(response2, input2, extraData2)
+    (bytes output2, bytes puke2, config config3) = calculateOutputForX2(response2, input2, extraData2)
     // Defer another write call to X3 handler
     revert StorageHandledByX3(
         output2,
         address(this),
-        config config2,
+        config config3,
         abi.encode(puke2),
         this.callback3.selector,
         extraData3,
@@ -556,10 +556,10 @@ function callbackDB(
         msg.sender,
         abi.encodePacked(value),
         [
-            urls, 
-            signers
-            approvals,
-            accessories,
+            config.urls, 
+            config.signers
+            config.approvals,
+            config.accessories,
         ],
         this.callbackXY.selector,
         extraData
