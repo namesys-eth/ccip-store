@@ -2,7 +2,7 @@
 eip:
 title: "Off-Chain Data Write Protocol"
 description: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised & mutable storages
-author: (@sshmatrix), (@0xc0de4c0ffee), (@arachnid)
+author: (@sshmatrix), (@0xc0de4c0ffee)
 discussions-to:
 status: Draft
 type: Standards Track
@@ -51,7 +51,7 @@ Following EIP-5559, a CCIP-Write deferral call to an arbitrary function `setValu
 error StorageHandledBy__(...)
 
 // Generic function in a contract
-function setValue(
+function setValueWithConfig(
     bytes32 key, 
     bytes32 value,
     config config, // Metadata pertaining to storage handler __
