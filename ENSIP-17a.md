@@ -165,6 +165,15 @@ function callback3(...) external view {
 ```
 
 ### Config Interface
+Config interface is dedicated to handling all the metadata that different storages require to defer the calls successfully. Keeping in mind the needs of a broad set of storages, `config` interface consists of four arrays:
+
+1. `coordinates`: Coordinates refer to the string-formatted pointers to the target storage. For example, for writing to an L2, its `ChainID` is sufficient information. For writing to a database or a decentralised storage, the handler's HTTP URL is sufficient information. 
+
+2. `authorities:` Authorities refer to the addresses of authorities securing the off-chain data. For an L2, the contract address is the authority. For a database or decentralised storage, the data should ideally be signed by an Ethereum private key, which is also the authority in this case. If the authority is stored on-chain by some contracts, then this value is not needed. 
+
+3. `approvals:` Approvals refer to the signatures signed by the corresponding authorities, irrespective of whether they are stored on-chain or not. 
+
+4. `accessories:` Accessories refer to the metadata required to update the off-chain storages, if the storage is wrapped in a namespace. For example, for IPFS wrapped in IPNS, signature from the IPNS private key along with the last sequence number is the required accessory. For databases, login credentials are the accessories although clients must be careful not to pass raw login credentials and use encryption strategies. 
 
 ```solidity
 // Type of config
@@ -184,6 +193,8 @@ bytes[] config = [
 ```
 
 ### L2 Handler
+L2 handler only requires the list of `ChainID` values and the corresponding contract addresses.
+
 ```solidity
 revert StorageHandledByL2(
     bytes input,
@@ -256,7 +267,6 @@ function callback(
 ```
 
 #### CALL an L2
-
 ```solidity
 setValueWithConfig(
     "avatar", 
@@ -282,6 +292,8 @@ setValueWithConfig(
 ```
 
 ### Database Handler
+In the minimal version, a database handler only requires the list of URLs (`urls`) responsible for the write operations. However, it is strongly advised that all clients employ some sort of verifiable signature scheme and sign the off-chain data; these signatures can be verified during CCIP-Read calls and will prevent possible unauthorised alterations to the data. In such a scenario, the list of signatures (`approvals`) are needed at the very least; if the signing authority is **not** stored on-chain, then the address of the authority (`authorities`) must also be attached.
+
 ```solidity
 revert StorageHandledByDB(
     bytes input,
@@ -354,7 +366,6 @@ function callback(
 ```
 
 #### CALL a DB
-
 ```solidity
 setValueWithConfig(
     "avatar", 
@@ -383,6 +394,8 @@ setValueWithConfig(
 ```
 
 ### Decentralised Storage Handler
+Decentralised storage handlers are the most advanced case and require an equivalent config to database handlers. In addition, such storages are usually immutable at core (e.g. IPFS and Arweave) and therefore employ cryptographic namespaces for static data retrieval. Such namespaces typically have their own access keypairs and their own choices of base-encodings as well as elliptic curves. In order to write to such storages wrapped in namespaces, signature and other relevant metadata (`accessories`) must be included in the config.
+
 ```solidity
 revert StorageHandledByXY(
     bytes input,
@@ -455,7 +468,6 @@ function callback(
 ```
 
 #### CALL IPNS and ArNS
-
 ```solidity
 setValueWithConfig(
     "avatar", 
@@ -568,11 +580,15 @@ function callbackXY(
 
 ### Events
 `TBA`
+
 ### Interface
 `TBA`
+
 ## Backwards Compatibility
 `TBA`
+
 ## Security Considerations
 `TBA`
+
 ## Copyright
 Copyright and related rights waived via [CC0](../LICENSE.md).
