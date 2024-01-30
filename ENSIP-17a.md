@@ -188,7 +188,7 @@ bytes[] config = [
 ```
 
 ### L2 Handler
-L2 handler only requires the list of `ChainID` values and the corresponding contract addresses.
+L2 handler only requires the list of `ChainID` values and the corresponding `contract` addresses.
 
 ```solidity
 revert StorageHandledByL2(
@@ -616,7 +616,7 @@ In this explicit example, let's consider a scenario where a service intends to p
         // 2nd deferral
         revert StorageHandledByL2(
             msg.sender,
-            abi.encodePacked(response), // Sequence number to update on 
+            abi.encodePacked(response), // Sequence number (and IPFS hash) to update on L2
             [
                 ["11"], // Expects list of ChainID values
                 ["0xc0ffee254729296a45a3885639AC7E10F9d54979"], // Expected list of addresses
