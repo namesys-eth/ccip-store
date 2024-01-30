@@ -54,7 +54,7 @@ error StorageHandledBy__(...)
 function setValueWithConfig(
     bytes32 key, 
     bytes32 value,
-    config config, // Metadata pertaining to storage handler __
+    config config // Metadata pertaining to storage handler __
 ) external {
     // Defer another write call to storage handler
     revert StorageHandledBy__(
@@ -89,21 +89,21 @@ error StorageHandledByX1(
     config config, // Metadata pertaining to storage handler X1
     bytes callData, 
     bytes4 callback, 
-    bytes extraData,
+    bytes extraData
 )
 error StorageHandledByX2( 
     address sender, 
     config config, // Metadata pertaining to storage handler X2
     bytes callData, 
     bytes4 callback, 
-    bytes extraData,
+    bytes extraData
 )
 
 // Generic function in a contract
 function setValue(
     bytes32 key, 
     bytes32 value,
-    config config,
+    config config
 ) external {
     // Defer write call to X1 handler
     revert StorageHandledByX1(
@@ -369,7 +369,7 @@ setValueWithConfig(
     ] [
         [
             "https://db.namesys.xyz", // Database 1   
-            "https://db.notapi.dev", // Database 2
+            "https://db.notapi.dev" // Database 2
         ], 
         [
             "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Ethereum Signer 1
@@ -434,7 +434,7 @@ function setValueWithConfig(
         abi.encodePacked(value),
         [
             urls, 
-            signers
+            signers,
             approvals,
             accessories
         ],
@@ -469,7 +469,7 @@ setValueWithConfig(
     ] [
         [
             "https://ipns.namesys.xyz", // IPFS-NS Write Gateway    
-            "https://arweave.notapi.dev", // Arweave-NS Write Gateway
+            "https://arweave.notapi.dev" // Arweave-NS Write Gateway
         ], 
         [
             "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Ethereum Signer for IPFS
@@ -544,9 +544,9 @@ function callbackDB(
         abi.encodePacked(value),
         [
             config.urls, 
-            config.signers
+            config.signers,
             config.approvals,
-            config.accessories,
+            config.accessories
         ],
         this.callbackXY.selector,
         newExtraData
@@ -568,6 +568,89 @@ function callbackXY(
     )
 }
 ```
+
+### NOTES
+#### CALL L2 nested in IPNS
+In this explicit example, let's consider a scenario where a service intends to publish the `value` of a `key` with `setValueWithConfig()` off-chain to an IPNS container. IPNS updates are notoriously frivolous in their uptake rate at long TTLs and can return stale results for a while in some cases even after an update. Due to this reason, the service wants to index the `sequence` of updates on an L2 contract, from where CCIP-Read can match the expected latest version with the resolved IPNS records before resolving any request. This document envisions the process entailed as follows:
+
+1. User makes a request to set `value` of a `key` with `setValueWithConfig()`, and attaches the `config` with legitimate values of `urls`, off-chain signers as `authorities`, `approvals` for off-chain signers, and `accessories` required to update their IPNS container (IPNS signature + `sequence`).
+2. `setValueWithConfig()` defers the storage to `StorageHandledByIP()`.
+
+    ```solidity
+    config config = [
+            ["https://ipns.namesys.xyz"], // Gateway URL
+            ["0xc0ffee254729296a45a3885639AC7E10F9d54979"], // Signer address
+            ["0xa6f5e0d78f51c6a80db0ade26cd8bb490e59fc4f24e38845a6d7718246f139d8712be7a3421004a3b12def473d5b9b0d83a0899fb736200a915a1648229cf5e21b"], // Ethereum signature by signer
+            [
+                abi.encodePacked(
+                    "0xa74f6d477c01189834a56b52c8189d6fb228d40e17ef0b255b36848f1432f0bc35b1cf4a2f5390a8aef6c72665b752907be6a979a3ff180d9c13c7983df5d9c2", // Hex-encoded IPNS signature over ed25519 curve
+                    bytes32(1) // Sequence required by IPNS signature payloads
+                )
+            ]
+        ]
+
+    function setValueWithConfig(
+        bytes32 key, 
+        bytes32 value,
+        config config
+    ) external {
+        // 1st deferral
+        revert StorageHandledByIP(
+            msg.sender,
+            abi.encodePacked(key, value),
+            config config,
+            this.callbackIP.selector,
+            extraData
+        )
+    }
+    ```
+3. `callbackIP()` receives the `response` from first deferral which contains the `sequence` of the update, along with updated `newConfig` and `extraData`. Since the next step is L2, `newConfig` should be returned by the gateway containing the relevant information; in this case the relevant information is `ChainID` and `contract` address of the target L2. With `newConfig` in place, `callbackIP()` makes 2nd deferral to L2.
+
+    ```solidity
+    // Get response after 1st deferral and post-process
+    function callbackIP(
+        bytes response,
+        config newConfig,
+        bytes extraData
+    ) external view {
+        // 2nd deferral
+        revert StorageHandledByL2(
+            msg.sender,
+            abi.encodePacked(response), // Sequence number to update on 
+            [
+                ["11"], // Expects list of ChainID values
+                ["0xc0ffee254729296a45a3885639AC7E10F9d54979"], // Expected list of addresses
+                [], // MUST be empty for L2
+                [] // MUST be empty for L2
+            ],
+            this.callbackL2.selector,
+            newExtraData || extraData // Calculate newExtraData if necessary
+        )
+    }
+
+    // Get response after 2nd deferral and post-process accordingly
+    function callbackL2(
+        bytes response,
+        config newConfig,
+        bytes extraData
+    ) external view {
+        // Post-process response, newConfig and extraData if required
+        doStuff(response, newConfig, extraData)
+        return
+    }
+    ```
+4. `callbackL2()` receives the response of second deferral and post-processes the results accordingly. For instance, if second L2 deferral has failed for some reasons, `callbackL2()` may choose to undo the first deferral with another (third) deferral. If the second deferral has succeeded, it may choose to emit a custom event.
+
+#### Nesting, Complexity & Fidelity
+Nesting adds significant complexity to the protocol in the sense that the first gateway itself could have internally carried out the tasks performed by second deferral. This is a valid point and there is no correct answer, and there are several pros and cons to either approach. For instance, 
+
+1. **Fidelity**: Without nesting, one can imagine that future services may combine two or more services A, B & C in different orders and each ordered set then requires a new gateway along its arbitrary construction. With nesting, 'atomic' handlers can be standardised once and then all future services can play with the resulting fidelity without a need for a new gateway each time. 
+
+2. **Transparency**: Standard 'atomic' handlers will generally be more transparent to the end user when compared to complex gateways with several stacked storages A, B, C etc under the hood.
+
+3. **Complexity**: Nesting is complex and adds burden on the protocol, and may require CCIP-Write service providers to support an array of third-party non-EVM services that some handlers may require.
+
+In the end, it is for the developer community to balance their need for fidelity with covariant complexity.
 
 ### Events
 1. A public library must be maintained where each new storage handler supported by a native Protocol Improvement Proposal must register their `StorageHandledBy__()` identifier. This library could exist on-chain or off-chain; in the end such a list of `StorageHandledBy__()` identifiers must be the accepted standard for CCIP-Write infrastructure providers (similar to multiformats & multicodec table). If the 2-character space runs out, it can be extended to 3 or more characters without any fear of identifier collisions.
