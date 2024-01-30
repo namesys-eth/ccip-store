@@ -631,7 +631,11 @@ In this explicit example, let's consider a scenario where a service intends to p
             newExtraData || extraData // Calculate newExtraData if necessary
         )
     }
+    ```
 
+4. `callbackL2()` receives the response of second deferral and post-processes the results accordingly. For instance, if second L2 deferral has failed for some reasons, `callbackL2()` may choose to undo the first deferral with another (third) deferral. If the second deferral has succeeded, it may choose to emit a custom event or perform other tasks before wrapping up.
+
+    ```solidity
     // Get response after 2nd deferral and post-process accordingly
     function callbackL2(
         bytes response,
@@ -643,8 +647,6 @@ In this explicit example, let's consider a scenario where a service intends to p
         return
     }
     ```
-
-4. `callbackL2()` receives the response of second deferral and post-processes the results accordingly. For instance, if second L2 deferral has failed for some reasons, `callbackL2()` may choose to undo the first deferral with another (third) deferral. If the second deferral has succeeded, it may choose to emit a custom event or perform other tasks before wrapping up.
 
 #### Nesting, Complexity & Fidelity
 Nesting adds significant complexity to the protocol in the sense that the first gateway itself could have internally carried out the tasks performed by second deferral. This is a valid point and there is no correct answer, and there are several pros and cons to either approach. For instance, 
