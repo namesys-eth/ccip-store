@@ -573,7 +573,7 @@ function callbackXY(
 #### CALL L2 nested in IPNS
 In this explicit example, let's consider a scenario where a service intends to publish the `value` of a `key` off-chain with `setValueWithConfig()` to an IPNS container. IPNS updates are notoriously frivolous in their uptake rate at long TTLs and can return stale results for a while in some cases after an update. Due to this reason, the service wants to index at least the `sequence` number of updates on an L2 contract and perhaps also the IPFS hash, from where CCIP-Read can force-match the expected latest version against the resolved IPNS records before resolving any request. This document envisions the process entailed as follows:
 
-1. User makes a request to set `value` of a `key` with `setValueWithConfig()`, and attaches the `config` with legitimate values of `urls` of gateways, off-chain signers as `authorities`, `approvals` for off-chain signers, and `accessories` required to update their IPNS container (IPNS signature + `sequence` number).
+1. User makes a request to set `value` of a `key` with `setValueWithConfig()`, and attaches the `config` with legitimate `coordinates` of gateways in form of `urls`, off-chain `signers` as `authorities`, `approvals` for off-chain signers, and `accessories` required to update their IPNS container (IPNS signature + `sequence` number).
 2. `setValueWithConfig()` defers the storage to `StorageHandledByIP()`.
 
     ```solidity
