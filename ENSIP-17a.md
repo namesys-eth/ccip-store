@@ -571,9 +571,9 @@ function callbackXY(
 
 ### NOTES
 #### CALL L2 nested in IPNS
-In this explicit example, let's consider a scenario where a service intends to publish the `value` of a `key` with `setValueWithConfig()` off-chain to an IPNS container. IPNS updates are notoriously frivolous in their uptake rate at long TTLs and can return stale results for a while in some cases even after an update. Due to this reason, the service wants to index the `sequence` of updates on an L2 contract, from where CCIP-Read can match the expected latest version with the resolved IPNS records before resolving any request. This document envisions the process entailed as follows:
+In this explicit example, let's consider a scenario where a service intends to publish the `value` of a `key` off-chain with `setValueWithConfig()` to an IPNS container. IPNS updates are notoriously frivolous in their uptake rate at long TTLs and can return stale results for a while in some cases after an update. Due to this reason, the service wants to index at least the `sequence` number of updates on an L2 contract and perhaps also the IPFS hash, from where CCIP-Read can force-match the expected latest version against the resolved IPNS records before resolving any request. This document envisions the process entailed as follows:
 
-1. User makes a request to set `value` of a `key` with `setValueWithConfig()`, and attaches the `config` with legitimate values of `urls`, off-chain signers as `authorities`, `approvals` for off-chain signers, and `accessories` required to update their IPNS container (IPNS signature + `sequence`).
+1. User makes a request to set `value` of a `key` with `setValueWithConfig()`, and attaches the `config` with legitimate values of `urls` of gateways, off-chain signers as `authorities`, `approvals` for off-chain signers, and `accessories` required to update their IPNS container (IPNS signature + `sequence` number).
 2. `setValueWithConfig()` defers the storage to `StorageHandledByIP()`.
 
     ```solidity
@@ -604,7 +604,7 @@ In this explicit example, let's consider a scenario where a service intends to p
         )
     }
     ```
-3. `callbackIP()` receives the `response` from first deferral which contains the `sequence` of the update, along with updated `newConfig` and `extraData`. Since the next step is L2, `newConfig` should be returned by the gateway containing the relevant information; in this case the relevant information is `ChainID` and `contract` address of the target L2. With `newConfig` in place, `callbackIP()` makes 2nd deferral to L2.
+3. `callbackIP()` receives the `response` from first deferral which contains the new `sequence` of the update, along with updated `newConfig` and `extraData`. Since the next step is L2, `newConfig` should be returned by the gateway containing the relevant information; in this case the relevant information is `ChainID` and `contract` address of the target L2. With `newConfig` in place, `callbackIP()` makes 2nd deferral to L2.
 
     ```solidity
     // Get response after 1st deferral and post-process
@@ -639,16 +639,16 @@ In this explicit example, let's consider a scenario where a service intends to p
         return
     }
     ```
-4. `callbackL2()` receives the response of second deferral and post-processes the results accordingly. For instance, if second L2 deferral has failed for some reasons, `callbackL2()` may choose to undo the first deferral with another (third) deferral. If the second deferral has succeeded, it may choose to emit a custom event.
+4. `callbackL2()` receives the response of second deferral and post-processes the results accordingly. For instance, if second L2 deferral has failed for some reasons, `callbackL2()` may choose to undo the first deferral with another (third) deferral. If the second deferral has succeeded, it may choose to emit a custom event or perform other tasks before wrapping up.
 
 #### Nesting, Complexity & Fidelity
 Nesting adds significant complexity to the protocol in the sense that the first gateway itself could have internally carried out the tasks performed by second deferral. This is a valid point and there is no correct answer, and there are several pros and cons to either approach. For instance, 
 
-1. **Fidelity**: Without nesting, one can imagine that future services may combine two or more services A, B & C in different orders and each ordered set then requires a new gateway along its arbitrary construction. With nesting, 'atomic' handlers can be standardised once and then all future services can play with the resulting fidelity without a need for a new gateway each time. 
+1. **Fidelity**: Without nesting, one can imagine that future services may combine two or more services A, B & C in different orders and each ordered set then requires a new gateway along its arbitrary construction and standardisation. With nesting, 'atomic' handlers can be standardised once during their introduction to the library and then all future services can play with the resulting fidelity without a need for a new gateway standard each time. 
 
-2. **Transparency**: Standard 'atomic' handlers will generally be more transparent to the end user when compared to complex gateways with several stacked storages A, B, C etc under the hood.
+2. **Transparency**: Standard 'atomic' handlers will generally be more transparent to the end user when compared to complex gateways with several stacked storages A, B, C etc under the hood, unless each gateway is well-documented and standardised.
 
-3. **Complexity**: Nesting is complex and adds burden on the protocol, and may require CCIP-Write service providers to support an array of third-party non-EVM services that some handlers may require.
+3. **Complexity**: Nesting is complex and adds burden on the protocol, and may need CCIP-Write service providers to support an array of third-party non-EVM services that some handlers may require.
 
 In the end, it is for the developer community to balance their need for fidelity with covariant complexity.
 
