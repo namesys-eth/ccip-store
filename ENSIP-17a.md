@@ -574,7 +574,6 @@ function callbackXY(
 In this explicit example, let's consider a scenario where a service intends to publish the `value` of a `key` off-chain with `setValueWithConfig()` to an IPNS container. IPNS updates are notoriously frivolous in their uptake rate at long TTLs and can return stale results for a while in some cases after an update. Due to this reason, the service wants to index at least the `sequence` number of updates on an L2 contract and perhaps also the IPFS hash, from where CCIP-Read can force-match the expected latest version against the resolved IPNS records before resolving any request. This document envisions the process entailed as follows:
 
 1. User makes a request to set `value` of a `key` with `setValueWithConfig()`, and attaches the `config` with legitimate `coordinates` of gateways in form of `urls`, off-chain `signers` as `authorities`, `approvals` for off-chain signers, and `accessories` required to update their IPNS container (IPNS signature + `sequence` number).
-2. `setValueWithConfig()` defers the storage to `StorageHandledByIP()`.
 
     ```solidity
     config config = [
@@ -588,7 +587,11 @@ In this explicit example, let's consider a scenario where a service intends to p
                 )
             ]
         ]
+    ```
 
+2. `setValueWithConfig()` defers the storage to `StorageHandledByIP()`.
+
+    ```solidity
     function setValueWithConfig(
         bytes32 key, 
         bytes32 value,
@@ -604,7 +607,8 @@ In this explicit example, let's consider a scenario where a service intends to p
         )
     }
     ```
-3. `callbackIP()` receives the `response` from first deferral which contains the new `sequence` of the update, along with updated `newConfig` and `extraData`. Since the next step is L2, `newConfig` should be returned by the gateway containing the relevant information; in this case the relevant information is `ChainID` and `contract` address of the target L2. With `newConfig` in place, `callbackIP()` makes 2nd deferral to L2.
+
+3. `callbackIP()` receives the `response` from first deferral which contains the new `sequence` of the update, along with updated `newConfig` and `extraData`. Since the next step is L2, `newConfig` containing the relevant information must be returned by the gateway; in this case the relevant information is `ChainID` and `contract` address of the target L2. With `newConfig` in place, `callbackIP()` makes 2nd deferral to L2.
 
     ```solidity
     // Get response after 1st deferral and post-process
@@ -619,7 +623,7 @@ In this explicit example, let's consider a scenario where a service intends to p
             abi.encodePacked(response), // Sequence number (and IPFS hash) to update on L2
             [
                 ["11"], // Expects list of ChainID values
-                ["0xc0ffee254729296a45a3885639AC7E10F9d54979"], // Expected list of addresses
+                ["0xc0ffee254729296a45a3885639AC7E10F9d54979"], // Expects list of addresses
                 [], // MUST be empty for L2
                 [] // MUST be empty for L2
             ],
@@ -639,6 +643,7 @@ In this explicit example, let's consider a scenario where a service intends to p
         return
     }
     ```
+
 4. `callbackL2()` receives the response of second deferral and post-processes the results accordingly. For instance, if second L2 deferral has failed for some reasons, `callbackL2()` may choose to undo the first deferral with another (third) deferral. If the second deferral has succeeded, it may choose to emit a custom event or perform other tasks before wrapping up.
 
 #### Nesting, Complexity & Fidelity
