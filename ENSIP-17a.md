@@ -29,10 +29,10 @@ Writing to a variety of centralised and decentralised storages is a broader obje
 
 2. Each storage must incorporate some form of security measures during write operations so that off-chain data's integrity can be verified by CCIP-Read contracts during data retrieval stage.
 
-EIP-5559 was the first step toward such a tolerant 'CCIP-Write' protocol which outlined how write deferrals could be made to L2 and centralised databases. The cases of L2 and database are similar; deferral to an L2 involves routing the `eth_call` to L2, while deferral to a database can be made by extracting `eth_sign` from `eth_call` and posting the resulting signature along with the data for later verification. In both cases, no pre-flight information needs to be processed by the client and arguments of `eth_call` and `eth_sign` as specified in EIP-5559 are sufficient. This proposal extends the previous attempt by including secure write deferrals to decentralised storages, especially those which - beyond the arguments of `eth_call` and `eth_sign` - require additional pre-flight metadata from clients to successfully host users' data on their favourite storage. This document also enables more complex and generic use-cases of databases such as those which do not store the signers' addressess on-chain as presumed in EIP-5559.
+EIP-5559 was the first step toward such a tolerant 'CCIP-Write' protocol which outlined how write deferrals could be made to L2 and centralised databases. The cases of L2 and database are similar; deferral to an L2 involves routing the `eth_call` to L2, while deferral to a database can be made by extracting `eth_sign` from `eth_call` and posting the resulting signature along with the data for later verification. In both cases, no pre-flight information needs to be processed by the client and arguments of `eth_call` and `eth_sign` as specified in EIP-5559 are sufficient. This proposal extends the previous attempt by including secure write deferrals to decentralised storages, especially those which - beyond the arguments of `eth_call` and `eth_sign` - require additional pre-flight metadata from clients to successfully host users' data on their favourite storage. This document also enables more complex and generic use-cases of databases such as those which do not store the signers' addressess on chain as presumed in EIP-5559.
 
 ### Curious Case of Decentralised Storages
-Decentralised storages powered by cryptographic protocols are unique in their diversity of architectures compared to centralised databases or L2 chains, both of which have canonical architectures in place. For instance, write calls to L2 chains can be generalised through the use of `ChainID` for any given `callData`; write deferral in this case is as simple as routing the `eth_call` to another contract on an L2 chain. There is no need to incorporate any additional security requirement(s) since the L2 chain ensures data integrity locally, while the global integrity can be proven by employing a state verifier scheme (e.g. EVM-Gateway) during CCIP-Read calls. Centralised databases have a very similar architecture where instead of invoking `eth_call`, the result of `eth_sign` needs to be posted on the database along with the `callData` for integrity verification by CCIP-Read.
+Decentralised storages powered by cryptographic protocols are unique in their diversity of architectures compared to centralised databases or L2 chains, both of which have canonical architectures in place. For instance, write calls to L2 chains can be generalised through the use of `ChainId` for any given `callData`; write deferral in this case is as simple as routing the `eth_call` to another contract on an L2 chain. There is no need to incorporate any additional security requirement(s) since the L2 chain ensures data integrity locally, while the global integrity can be proven by employing a state verifier scheme (e.g. EVM-Gateway) during CCIP-Read calls. Centralised databases have a very similar architecture where instead of invoking `eth_call`, the result of `eth_sign` needs to be posted on the database along with the `callData` for integrity verification by CCIP-Read.
 
 Decentralised storages on the other hand, do not typically have EVM- or database-like environments and may have their own unique content addressing requirements. For example, IPFS, Arweave, Swarm etc all have unique content identification schemes as well as their own specific fine-tunings and/or choices of cryptographic primitives, besides supporting their own cryptographically secured namespaces. This significant and diverse deviation from EVM-like architecture results in an equally diverse set of requirements during both the write deferral operation as well as the subsequent state verifying stage.
 
@@ -40,7 +40,7 @@ For example, consider a scenario where the choice of storage is IPNS or ArNS. In
 
 ## Specification    
 ### Overview
-The following specification revolves around the structure and description of an arbitrary off-chain storage handler tasked with the responsibility of writing to an arbitrary storage. First introduced in EIP-5559, the protocol outlined herein expands the capabilities of the `StorageHandledBy__()` revert to accept decentralised and namespaced storages. In addition, this draft proposes that besides `StorageHandledByL2()` and `StorageHandledByOffChainDatabase()`, new `StorageHandledBy__()` reverts be allowed through a publicly curated listed (similar to multiformats and multicodec library) where each new `StorageHandledBy__()` storage handler must be accompanied by a complete documentation of its interface and design. Some foreseen examples of new storage handlers include `StorageHandledByIPFS()` for IPFS, `StorageHandledByIPNS()` for IPNS, `StorageHandledByArweave()` for Arweave, `StorageHandledByArNS()` for ArNS, `StorageHandledBySwarm()` for Swarm etc.
+The following specification revolves around the structure and description of an arbitrary off-chain storage handler tasked with the responsibility of writing to an arbitrary storage. First introduced in EIP-5559, the protocol outlined herein expands the capabilities of the `StorageHandledBy__()` revert to accept decentralised and namespaced storages. In addition, this draft proposes that besides `StorageHandledByL2()` and `StorageHandledByOffChainDatabase()`, new `StorageHandledBy__()` reverts be allowed through a publicly curated listed where each new `StorageHandledBy__()` storage handler must be accompanied by a complete documentation of its interface and design. Some foreseen examples of new storage handlers include `StorageHandledByIPFS()` for IPFS, `StorageHandledByIPNS()` for IPNS, `StorageHandledByArweave()` for Arweave, `StorageHandledByArNS()` for ArNS, `StorageHandledBySwarm()` for Swarm etc.
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/schematic.png)
 
@@ -57,9 +57,9 @@ function setValue(
 ) external {
     // Get all necessary metadata from contract
     // Should typically contain coordinates to user's data
-    config onChainConfig = getInfoFromContract(...)
+    config onChainConfig = getInfoFromContract(...);
     // Defer write call with relevant on-chain information
-    revert StorageHandledBy__(onChainConfig, ...)
+    revert StorageHandledBy__(onChainConfig, ...);
 }
 ```
 
@@ -71,227 +71,92 @@ error StorageHandledBy__(
     bytes msg.sender, // Sender of call
     bytes callData, // Payload to store
     config onChainConfig // Send all necessary data from contract
-)
+);
 ```
 
-The type `config` captures all the relevant information that the client may require from the contract to update a user's data on their favourite storage. For instance, `config` should contain the public coordinates to the user's data if such data exists on-chain. In case of `StorageHandledByIPNS()` for example, `config` may contain the public key of a user's IPNS container that has been stored on-chain; the case of ArNS is similar. In case of `StorageHandledByOffChainDatabase()`, `config` may contain the custom gateway URL serving a user's data or some form of unique identifier required by the client to locate the user's data. It follows that each storage handler `StorageHandledBy__()` must define the precise construction of their chosen `config` in their documentation.
+#### Config 
+The type `config` captures all the relevant information that the client may require from the contract to update a user's data on their favourite storage. For instance, `config` should contain the public coordinates to the user's data if such data exists on chain. In case of `StorageHandledByIPNS()` for example, `config` may contain the public key of a user's IPNS container that has been stored on chain; the case of ArNS is similar. In case of `StorageHandledByOffChainDatabase()`, `config` may contain the custom gateway URL serving a user's data or some form of unique identifier required by the client to locate the user's data. It follows that each storage handler `StorageHandledBy__()` must define the precise construction of their chosen `config` in their documentation.
+
+```solidity
+// Config Type
+type config = [
+        bytes[] | string[], 
+        bytes[] | string[] | address[],
+        ...
+    ]; 
+// Data inside config
+config onChainConfig = [
+        coordinates | [], // List of coordinates (must exist on chain), e.g. ChainId for L2, URL or identifier for off-chain storage, public key for off-chain namespaced & decentralised storages etc
+        authorities | [], // List of addresses of authorities (if they exist on chain), e.g. contract address for L2, custom on-chain signer for other storages etc
+        ...
+    ];
+```
 
 ### L2 Handler
-A mimimal L2 handler only requires the list of `ChainID` values and the corresponding `contract` addresses and `StorageHandledByL2()` as defined in EIP-5559 is sufficient. In context of this proposal, `ChainID` and `contract` must be part of the `config`. There may however arise a situation where a service first stores some data on L2 and then writes - asynchronously or otherwise - to another off-chain storage type; in such cases, `config` may additionally contain the necessary metadata to write to off-chain storage.
+A mimimal L2 handler only requires the list of `ChainId` values and the corresponding `contract` addresses and `StorageHandledByL2()` as defined in EIP-5559 is sufficient. In context of this proposal, `ChainId` and `contract` must be part of the `config`. There may however arise a situation where a service first stores some data on L2 and then writes - asynchronously or otherwise - to another off-chain storage type; in such cases, `config` may additionally contain the necessary metadata to write to off-chain storage.
 
+#### EXAMPLE
+```solidity
+config onChainConfig = [
+        [
+            "11",
+            "23",
+            ...
+        ], // ChainId values to write to
+        [
+            "0xc0ffee254729296a45a3885639AC7E10F9d54979",
+            "0x75b6B7CEE3719850d344f65b24Db4B7433Ca6ee4",
+            ...
+        ], // Contract addresses on chains
+        ...
+    ];
+```
 
+The deferral in this case will prompt the client to submit the transaction to the relevant L2 as prescribed by the incoming `config`.
 
 ### Database Handler
-In the minimal version, a database handler only requires the list of URLs (`urls`) responsible for the write operations. However, it is strongly advised that all clients employ some sort of verifiable signature scheme and sign the off-chain data; these signatures can be verified during CCIP-Read calls and will prevent possible unauthorised alterations to the data. In such a scenario, the list of signatures (`approvals`) are needed at the very least; if the signing authority is **not** stored on-chain, then the address of the authority (`authorities`) must also be attached.
+A minimal database handler is similar to an L2 in the sense that:
 
-```solidity
-revert StorageHandledByDB(
-    address msg.sender,
-    [
-        string[], 
-        address[], 
-        bytes[], 
-        bytes[]
-    ] [
-        urls, // List of URLs handling writing to databases
-        signers || [], // List of addresses signing the calldata
-        approvals || [], // List of signatures approving the signers
-        [] // MUST be empty for centralised databases
-    ],
-    bytes callData,
-    bytes4 this.callback.selector,
-    bytes extraData
-)
+  a) it requires the coordinates in form of gateway `urls` responsible for handling off-chain write operations (similar to `ChainId`), and
 
-function callback(...) external view {
-    ...
-    return
-}
-```
+  b) it should require `eth_sign` output to secure the data and the client must prompt the users for these signatures (similar to `eth_call`).
+
+In this case, the `config` consists of the bespoke `urls` as `coordinates`, and the addresses of `signers` (of `eth_sign`) take the place of `authorities`. The client must make sure that the signatures forwarded to the gateways match the addresses in `authorities`. If some gateways don't implement signatures, then clients could choose not to support those service providers since off-chain read-in without cryptographic verification methods is unsafe practise; there may however be exceptions to this due to which `authorities` are allowed to be empty in this proposal.
 
 #### EXAMPLE
 ```solidity
-function setValueWithConfig(
-    bytes32 key, 
-    bytes32 value,
-    [
-        string[], 
-        address[], 
-        bytes[], 
-        bytes[]
-    ] [
-        urls,
-        signers,
-        approvals,
-        []
-    ],
-) external {
-    revert StorageHandledByDB(
-        msg.sender,
-        abi.encodePacked(value),
+config onChainConfig = [
         [
-            urls, 
-            signers,
-            approvals,
-            []
-        ],
-        this.callback.selector,
-        extraData
-    )
-}
-
-function callback(
-    bytes response,
-    config config,
-    bytes extraData
-) external view {
-    bytes newConfig = calculateOutputForDB(response, config, extraData)
-    return (
-        newConfig,
-        response == true
-    )
-}
+            "https://api.service.net",
+            "wss://service.write.com",
+            ...
+        ], // URLs or other identifiers
+        [
+            "0xc0cac0254729296a45a3885639AC7E10F9d54979",
+            "",
+            "0xcafec0laE3719850d344f65b24Db4B7433Ca6ee4",
+            ...
+        ], // Custom signers (if they exist on chain)
+        ...
+    ];
 ```
 
-#### CALL a DB
-```solidity
-setValueWithConfig(
-    "avatar", 
-    "https://namesys.xyz/logo.png",
-    [
-        string[], 
-        address[], 
-        bytes[], 
-        bytes[]
-    ] [
-        [
-            "https://db.namesys.xyz", // Database 1   
-            "https://db.notapi.dev" // Database 2
-        ], 
-        [
-            "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Ethereum Signer 1
-            "0x75b6B7CEE3719850d344f65b24Db4B7433Ca6ee4" // Ethereum Signer 2
-        ],
-        [
-            "0xa6f5e0d78f51c6a80db0ade26cd8bb490e59fc4f24e38845a6d7718246f139d8712be7a3421004a3b12def473d5b9b0d83a0899fb736200a915a1648229cf5e21b", // Approval Signature 1
-            "0x8d591768f97f950d1c2cb8a51e4f8718cd154d07e0b60ec955202ac478c45b6f3b745ee136276cbfc4a7c1d7c7cdd0a8e8921395b60c556f0c4857ead0447e351c" // Approval Signature 2
-        ],
-        [] // MUST be empty for centralised databases
-    ]
-)
-```
+In the above example, the client must prompt the user for a signature corresponding to each non-empty value in `authorities`, verify that the signature matches the value in `authorities` and pass the resulting signature to the respective gateway URL.
 
 ### Decentralised Storage Handler
-Decentralised storage handlers are the most advanced case and require an equivalent config to database handlers. In addition, such storages are usually immutable at core (e.g. IPFS and Arweave) and therefore employ cryptographic namespaces for static data retrieval. Such namespaces typically have their own access keypairs and their own choices of base-encodings as well as elliptic curves. In order to write to such storages wrapped in namespaces, signature and other relevant metadata (`accessories`) must be included in the config.
+Decentralised storages are the extremest in the sense that they come both in immutable and mutable form; the **immutable** forms locate the data through immutable content identifiers (CIDs) while **mutable** forms utilise some sort of namespace which can statically reference any dynamic content. Examples of the former include raw content hosted on IPFS and Arweave while the latter forms use IPNS and ArNS namespaces respectively to reference the raw and dynamic content. 
 
-```solidity
-revert StorageHandledByXY(
-    address msg.sender,
-    [
-        string[], 
-        address[], 
-        bytes[], 
-        bytes[]
-    ] [
-        urls, // List of URLs handling write operations to off-chain storages
-        signers || [], // List of addresses signing the calldata
-        approvals || [], // List of signatures approving the signers
-        accessories || [] // List of access signatures for native namespaces
-    ],
-    bytes callData,
-    bytes4 this.callback.selector,
-    bytes extraData
-)
+The case of immutable forms is similar to a database although these forms are not as useful in practise so far. This is due to the difficulty associated with posting the unique CID on chain each time a storage update is made. One way to bypass this difficulty is by storing the CID cheaply in an L2 contract; this method requires the client to update the data on both the decentralised storage as well as the L2 contract by means of two independent deferrals. CCIP-Read in this case is also expected to read from two storages to be able to fully handle a read call. Contrary to this tedious flow, namespaces can alternatively be used to statically fetch immutable CIDs. IPNS and ArNS public keys for example, can be used to refer to IPFS and Arweave CIDs respectively; this method doesn't require dual deferrals by CCIP-Write or -Read and the IPNS or Arweave public key needs to be stored on chain only once. However, accessing the IPNS and ArNS content now requires that the client must prompt the user for additional information (via `triggers`) such as IPNS and ArNS signatures in order to update the data.
 
-function callback(...) external view {
-    ...
-    return
-}
-```
+Decentralised storage handlers are therefore bestowed with the ability to revert with additional `triggers` which the clients must process before calling the gateway with the results of processed triggers. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages.
 
 #### EXAMPLE
 ```solidity
-function setValueWithConfig(
-    bytes32 key, 
-    bytes32 value,
-    [
-        string[], 
-        address[], 
-        bytes[], 
-        bytes[]
-    ] [
-        urls,
-        signers,
-        approvals,
-        accessories
-    ],
-) external {
-    revert StorageHandledByXY(
-        msg.sender,
-        abi.encodePacked(value),
-        [
-            urls, 
-            signers,
-            approvals,
-            accessories
-        ],
-        this.callback.selector,
-        extraData
-    )
-}
 
-function callback(
-    bytes response,
-    config config,
-    bytes extraData
-) external view {
-    bytes newConfig = calculateOutputForXY(response, config, extraData)
-    return (
-        newConfig,
-        response == true
-    )
-}
-```
-
-#### CALL IPNS and ArNS
-```solidity
-setValueWithConfig(
-    "avatar", 
-    "https://namesys.xyz/logo.png",
-    [
-        string[], 
-        address[], 
-        bytes[], 
-        bytes[]
-    ] [
-        [
-            "https://ipns.namesys.xyz", // IPFS-NS Write Gateway    
-            "https://arweave.notapi.dev" // Arweave-NS Write Gateway
-        ], 
-        [
-            "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Ethereum Signer for IPFS
-            "0x1CFe432f336cdCAA3836f75A303459E61077068C" // Ethereum Signer for Arweave
-        ],
-        [
-            "0xa6f5e0d78f51c6a80db0ade26cd8bb490e59fc4f24e38845a6d7718246f139d8712be7a3421004a3b12def473d5b9b0d83a0899fb736200a915a1648229cf5e21b", // Approval Signature for IPFS
-            "0xf4e42fa7d1125fc149f29ed437e8cbbdac7e31bb493299e03df4d8cfd069c9a96bb12f6186e79ed6bc6e740086a67c0da022ffcd84ef50abf6c0e4f83d53a62d1c" // Approval Signature for Arweave
-        ],
-        [
-            abi.encodePacked(
-                "0xa74f6d477c01189834a56b52c8189d6fb228d40e17ef0b255b36848f1432f0bc35b1cf4a2f5390a8aef6c72665b752907be6a979a3ff180d9c13c7983df5d9c2", // Hex-encoded IPNS signature over ed25519 curve
-                bytes32(1) // Index or sequence or version number required by IPNS signature payloads; give bytes(0) for empty value
-            ), // Requires casting to bytes-like payload by gateway for IPFS-NS
-            abi.encodePacked(
-                "0x8a055b79515356324f68c18071b22085607d4f37577d53fe5c5c2b0ec9769ef1e70a5bc53f9fe901051e493a216a02ae7952a62488e26fa9547e504af01ef25cd904d853ea409fdf23bec0929caae4926d5e8e5353b4663880a", // Hex-encoded Arweave signature over ed25519 curve
-                bytes32(0) // Not required for Arweave
-            ) // Requires casting back to base64 by gateway for Arweave
-        ]
-    ]
-)
 ```
 
 ### Events
-1. A public library must be maintained where each new storage handler supported by a native Protocol Improvement Proposal must register their `StorageHandledBy__()` identifier. This library could exist on-chain or off-chain; in the end such a list of `StorageHandledBy__()` identifiers must be the accepted standard for CCIP-Write infrastructure providers (similar to multiformats & multicodec table). If the 2-character space runs out, it can be extended to 3 or more characters without any fear of identifier collisions.
+1. A public library must be maintained where each new storage handler must register their `StorageHandledBy__()` identifier. This library must exist in public domain and it should be the sole accepted standard for CCIP-Write infrastructure providers similar to [multiformats & multicodec](https://github.com/multiformats/multicodec) tables.
 
 2. Each `StorageHandledBy__()` provider should be supported with detailed docs of their infrastructure along with a Protocol Improvement Proposal.
 
