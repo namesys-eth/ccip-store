@@ -163,7 +163,7 @@ config onChainConfig = [
         ], // URLs or other identifiers
         [
             "0xc0cac0254729296a45a3885639AC7E10F9d54979", // Signer 1
-            "", // Signer 3
+            "", // Signer 2
             "0xcafec0laE3719850d344f65b24Db4B7433Ca6ee4", // Signer 3
             ...
         ], // Custom signers (if they exist on chain)
