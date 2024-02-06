@@ -36,7 +36,7 @@ Decentralised storages powered by cryptographic protocols are unique in their di
 
 Decentralised storages on the other hand, do not typically have EVM- or database-like environments and may have their own unique content addressing requirements. For example, IPFS, Arweave, Swarm etc all have unique content identification schemes as well as their own specific fine-tunings and/or choices of cryptographic primitives, besides supporting their own cryptographically secured namespaces. This significant and diverse deviation from EVM-like architecture results in an equally diverse set of requirements during both the write deferral operation as well as the subsequent state verifying stage.
 
-For example, consider a scenario where the choice of storage is IPNS or ArNS. In precise terms, IPNS storage refers to immutable IPFS content wrapped in mutable IPNS namespace, which eventually serves as the reference coordinate for off-chain data. The case of ArNS is similar; ArNS is immutable Arweave content wrapped in mutable ArNS namespace. To write to IPNS or ArNS storage, the client requires more information than only the gateway URL `url` responsible for write operations and arguments of `eth_sign`. More precisely, the client must at least prompt the user for their IPNS or ArNS signature which is necessary for updating the namespaced storage. The client may also require additional information from the user such as specific arguments required by IPNS or ArNS signature. One such example is the requirement of integer `sequence` of IPNS update which goes into the construction of signature message payload. These additional user-centric requirements are not accommodated by EIP-5559, and the resolution of these issues -- among others such as batch writing -- is detailed in the following attempt towards a suitable CCIP-Write specification.
+For example, consider a scenario where the choice of storage is IPNS or ArNS. In precise terms, IPNS storage refers to immutable IPFS content wrapped in mutable IPNS namespace, which eventually serves as the reference coordinate for off-chain data. The case of ArNS is similar; ArNS is immutable Arweave content wrapped in mutable ArNS namespace. To write to IPNS or ArNS storage, the client requires more information than only the gateway URL responsible for write operations and arguments of `eth_sign`. More precisely, the client must at least prompt the user for their IPNS or ArNS signature which is necessary for updating the namespaced storage. The client may also require additional information from the user such as specific arguments required by IPNS or ArNS signature. One such example is the requirement of integer `sequence` of IPNS update which goes into the construction of signature message payload. These additional user-centric requirements are not accommodated by EIP-5559, and the resolution of these issues - among others such as batch writing - is detailed in the following attempt towards a suitable CCIP-Write specification.
 
 ## Specification    
 ### Overview
@@ -47,7 +47,7 @@ The following specification revolves around the structure and description of an 
 Similar to EIP-5559, a CCIP-Write deferral call to an arbitrary function `setValue(bytes32 key, bytes32 value)` can be described in pseudo-code as follows:
 
 ```solidity
-// Define Revert Event
+// Define revert event
 error StorageHandledBy*(...)
 
 // Generic function in a contract
@@ -66,7 +66,7 @@ function setValue(
 where, the following structure for `StorageHandledBy*()` must be followed:
 
 ```solidity
-// Details of Revert Event
+// Details of revert event
 error StorageHandledBy*(
     bytes msg.sender, // Sender of call
     bytes callData, // Payload to store
@@ -104,7 +104,7 @@ config onChainConfig = [
             "11",
             "23",
             ...
-        ], // ChainId values to write to
+        ], // ChainId values identifying the chains
         [
             "0xc0ffee254729296a45a3885639AC7E10F9d54979",
             "0x75b6B7CEE3719850d344f65b24Db4B7433Ca6ee4",
@@ -168,9 +168,9 @@ config onChainConfig = [
             ...
         ], // Custom signers (if they exist on chain)
         [
-            "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a", // Multicodec-encoded IPNS public key
-            "0x55fb762f2744b86e98bb05d7816e2eafa26054642725b709f6430f9102bb0b27", // Multicodec-encoded shortened IPNS public key
-            "0x89d50a253a427f5060d1c2c6b512e308e822cbac37d8e82bc32e597c853856d4f60", // Hex-encoded ArNS public key
+            "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a", // Multicodec-encoded IPNS public key; accessory 1
+            "0x55fb762f2744b86e98bb05d7816e2eafa26054642725b709f6430f9102bb0b27", // Multicodec-encoded shortened IPNS public key; accessory 2
+            "0x89d50a253a427f5060d1c2c6b512e308e822cbac37d8e82bc32e597c853856d4f60", // Hex-encoded ArNS public key; accessory 3
             ...
         ], // Public keys of IPNS/ArNS or other namespaces (if they exist on chain)
         ...
