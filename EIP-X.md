@@ -1,14 +1,14 @@
 ---
-EIP: --
+EIP: ◥
 TITLE: "Off-Chain Data Write Protocol"
 DESCRIPTION: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised & mutable storages
-AUTHOR: (`@sshmatrix`), (`@0xc0de4c0ffee`), (`@arachnid`)
-DISCUSSIONS-TO: --
+AUTHOR: (@sshmatrix), (@0xc0de4c0ffee), (@arachnid), (@makoto)
+DISCUSSIONS-TO: ◥
 STATUS: Draft
 TYPE: Standards Track
 CATEGORY: ERC
-CREATED: --
-REQUIRES: --
+CREATED: ◥
+REQUIRES: ◥
 ---
 
 ## Abstract
@@ -40,7 +40,7 @@ For example, consider a scenario where the choice of storage is IPNS or ArNS. In
 
 ## Specification    
 ### Overview
-The following specification revolves around the structure and description of an arbitrary off-chain storage handler tasked with the responsibility of writing to an arbitrary storage. First introduced in EIP-5559, the protocol outlined herein expands the capabilities of the `StorageHandledBy<>()` revert to accept decentralised and namespaced storages. In addition, this draft proposes that besides `StorageHandledByL2()` and `StorageHandledByOffChainDatabase()`, new `StorageHandledBy<>()` reverts be allowed through a publicly curated listed where each new `StorageHandledBy<>()` storage handler must be accompanied by a complete documentation of its interface and design. Some foreseen examples of new storage handlers include `StorageHandledByIPFS()` for IPFS, `StorageHandledByIPNS()` for IPNS, `StorageHandledByArweave()` for Arweave, `StorageHandledByArNS()` for ArNS, `StorageHandledBySwarm()` for Swarm etc.
+The following specification revolves around the structure and description of an arbitrary off-chain storage handler tasked with the responsibility of writing to an arbitrary storage. First introduced in EIP-5559, the protocol outlined herein expands the capabilities of the `StorageHandledBy<>()` revert to accept decentralised and namespaced storages. In addition, this draft proposes that `StorageHandledByL2()` and `StorageHandledByOffChainDatabase()` introduced in EIP-5559 be updated, and new `StorageHandledBy<>()` reverts be allowed through a publicly curated list where each new `StorageHandledBy<>()` storage handler must be accompanied by a complete documentation of its interface and design. Some foreseen examples of new storage handlers include `StorageHandledByIPFS()` for IPFS, `StorageHandledByIPNS()` for IPNS, `StorageHandledByArweave()` for Arweave, `StorageHandledByArNS()` for ArNS, `StorageHandledBySwarm()` for Swarm etc.
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/schematic.png)
 
