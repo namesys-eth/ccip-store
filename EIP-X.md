@@ -60,7 +60,7 @@ function metadata(
 {
     // Return on-chain metadata for a user OR,
     // read metadata from off-chain source via
-    // CCIP-Read aka OffchainLookup()
+    // CCIP-Read aka 'OffchainLookup()'
     return (...) | revert OffchainLookup(...);
 }
 
@@ -97,7 +97,7 @@ function metadata(
     returns (...)
 {
     // Return on-chain metadata for a user OR,
-    // Read info from off-chain source using 
+    // read metadata from off-chain source via
     // CCIP-Read aka 'OffchainLookup()'
     return (...) | revert OffchainLookup(...);
 }
