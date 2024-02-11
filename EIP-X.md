@@ -87,9 +87,10 @@ error StorageHandledBy*(
 ```
 
 #### Metadata
-The `metadata()` function captures all the relevant information that the client may require to update a user's data on their favourite storage. For instance, `metadata()` must return a pointer to a user's data on their desired storage. In the case of `StorageHandledByL2()` for example, `metadata()` must return a chain identifier such as `ChainId` and additionally the contract address. In case of `StorageHandledByOffChainDatabase()`, `metadata()` must return the custom gateway URL serving a user's data. In case of `StorageHandledByIPNS()`, `metadata()` may return the public key of a user's IPNS container; the case of ArNS is similar. In addition, `metadata()` may further return security-driven information such as a delegated signer's address who is tasked with signing the off-chain data; such signers and their approvals must also be returned for verification tasks to be performed by the client. It follows that each storage handler `StorageHandledBy<>()` must define the precise construction of `metadata()` function in their documentation. Note that the `metadata()` function doesn't necessarily read any or all of the aforementioned metadata from the contract; it is possible that this metadata is in fact stored off-chain, in which case `metadata()` function may instead revert with `OffchainLookup()` that the client must process. Some example constructions of `metadata()` functions which support L2, databases, IPFS, Arweave, IPNS, ArNS and Swarm[`?`] are given below.
+The `metadata()` function captures all the relevant information that the client may require to update a user's data on their favourite storage. For instance, `metadata()` must return a pointer to a user's data on their desired storage. In the case of `StorageHandledByL2()` for example, `metadata()` must return a chain identifier such as `ChainId` and additionally the contract address. In case of `StorageHandledByOffChainDatabase()`, `metadata()` must return the custom gateway URL serving a user's data. In case of `StorageHandledByIPNS()`, `metadata()` may return the public key of a user's IPNS container; the case of ArNS is similar. In addition, `metadata()` may further return security-driven information such as a delegated signer's address who is tasked with signing the off-chain data; such signers and their approvals must also be returned for verification tasks to be performed by the client. It follows that each storage handler `StorageHandledBy<>()` must define the precise construction of `metadata()` function in their documentation. Note that the `metadata()` function doesn't necessarily read any or all of the aforementioned metadata from the contract; it is possible that this metadata is in fact stored off-chain, in which case `metadata()` function may instead revert with `OffchainLookup()` that the client must process.
 
 ```solidity
+// Generic metadata function's construction
 function metadata(
     bytes calldata node // Reference a user (optional)
 )
@@ -110,10 +111,12 @@ function metadata(
 }
 ```
 
-### (New) L2 Handler: `StorageHandledByL2()`
+Some example constructions of `metadata()` functions which support L2, databases, IPFS, Arweave, IPNS, ArNS and Swarm[`?`] are given below.
+
+### L2 Handler: `StorageHandledByL2()`
 A mimimal L2 handler only requires the list of `ChainId` values and the corresponding `contract` addresses and `StorageHandledByL2()` as defined in EIP-5559 is sufficient. In context of this proposal, `ChainId` and `contract` must be returned by the `metadata()` function. The deferral in this case will prompt the client to submit the transaction to the relevant L2 as returned by the `metadata()` function. One example of an L2 handler's `metadata()` function is given below.
 
-#### EXAMPLE (L1 pseudo-code)
+#### EXAMPLE
 ```solidity
 error StorageHandledByL2(contract.metadata.selector, ...)
 
@@ -139,7 +142,7 @@ function metadata()
 
 There may however arise a situation where a service first stores some data on L2 and then writes - asynchronously or otherwise - to another off-chain storage type. In such cases, the L2 contract should implement a second off-chain write deferral after making desired local state changes. This in principle allows creation of chained storage handlers without explicitly introducing a callback function in this proposal.
 
-### (New) Database Handler: `StorageHandledByDatabase()`
+### Database Handler: `StorageHandledByDatabase()`
 A minimal database handler is similar to an L2 in the sense that:
 
   a) it requires the gateway `url` responsible for handling off-chain write operations (similar to `ChainId`), and
@@ -148,7 +151,7 @@ A minimal database handler is similar to an L2 in the sense that:
 
 In this case, the `metadata()` must return the bespoke `url` and may additionally return the addresses of `signer` of `eth_sign`. If a `signer` is returned by the metadata, then the client must make sure that the signature forwarded to the gateway is signed by that `signer`. One example of a database handler's `metadata()` function is given below.
 
-#### EXAMPLE (L1 pseudo-code)
+#### EXAMPLE
 ```solidity
 error StorageHandledByDatabase(contract.metadata.selector, ...)
 
@@ -181,7 +184,7 @@ The case of immutable forms is similar to a database although these forms are no
 
 Decentralised storage handlers' `metadata()` interface is therefore expected to return additional `context` which the clients must interpret and evaluate before calling the gateway with the results. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages. One example of a decentralised storage handler's `metadata()` function for IPNS is given below.
 
-#### EXAMPLE for IPNS (L1 pseudo-code)
+#### EXAMPLE (`StorageHandledByIPNS()`)
 ```solidity
 error StorageHandledByIPNS(contract.metadata.selector, ...)
 
