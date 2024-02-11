@@ -1,14 +1,14 @@
 ---
-eip:
-title: "Off-Chain Data Write Protocol"
-description: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised & mutable storages
-author: (@sshmatrix), (@0xc0de4c0ffee), (@arachnid)
-discussions-to:
-status: Draft
-type: Standards Track
-category: ERC
-created:
-requires:
+EIP: --
+TITLE: "Off-Chain Data Write Protocol"
+DESCRIPTION: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised & mutable storages
+AUTHOR: (`@sshmatrix`), (`@0xc0de4c0ffee`), (`@arachnid`)
+DISCUSSIONS-TO: --
+STATUS: Draft
+TYPE: Standards Track
+CATEGORY: ERC
+CREATED: --
+REQUIRES: --
 ---
 
 ## Abstract
@@ -50,16 +50,27 @@ Similar to EIP-5559, a CCIP-Write deferral call to an arbitrary function `setVal
 // Define revert event
 error StorageHandledBy*(...)
 
+// Define metadata API interface
+function metadata(
+    bytes calldata ... // Reference a user
+)
+    external
+    view
+    returns (...)
+{
+    // Return on-chain metadata for a user OR,
+    // read metadata from off-chain source via
+    // CCIP-Read aka OffchainLookup()
+    return (...) | revert OffchainLookup(...);
+}
+
 // Generic function in a contract
 function setValue(
     bytes32 key,
     bytes32 value
 ) external {
-    // Get all necessary metadata from contract
-    // Should typically contain coordinates to user's data
-    config onChainConfig = getInfoFromContract(...);
-    // Defer write call with relevant on-chain information
-    revert StorageHandledBy*(onChainConfig, ...);
+    // Defer write call to off-chain handler
+    revert StorageHandledBy*(...);
 }
 ```
 
@@ -70,127 +81,110 @@ where, the following structure for `StorageHandledBy*()` must be followed:
 error StorageHandledBy*(
     bytes msg.sender, // Sender of call
     bytes callData, // Payload to store
-    config onChainConfig // Send all necessary data from contract
+    bytes4 contract.metadata.selector // Function selector for metadata API
 );
 ```
 
-#### Config 
-The type `config` captures all the relevant information that the client may require from the contract to update a user's data on their favourite storage. For instance, `config` should contain the public coordinates to the user's data if such data exists on chain. In the case of `StorageHandledByL2()` for example, `config` must contain a chain identifier such as `ChainId` and additionally the contract address. In case of `StorageHandledByOffChainDatabase()`, `config` must contain the custom gateway URL serving a user's data or some form of unique identifier required by the client to locate the user's data. In case of `StorageHandledByIPNS()`, `config` may contain the public key of a user's IPNS container that has been stored on chain; the case of ArNS is similar. In addition to data's location, the contract may further contain security-driven information such as a delegated signer's address who is tasked with signing the off-chain data; such authorities must also accompany the revert for verification tasks to be performed by the client. It follows that each storage handler `StorageHandledBy*()` must define the precise construction of their chosen `config` in their documentation. One generic construction of `config` which supports L2, databases, IPFS, Arweave, IPNS, ArNS and Swarm[`?`] is given below.
+#### Metadata
+The `metadata()` function captures all the relevant information that the client may require to update a user's data on their favourite storage. For instance, `metadata()` must return a pointer to a user's data on their desired storage. In the case of `StorageHandledByL2()` for example, `metadata()` must return a chain identifier such as `ChainId` and additionally the contract address. In case of `StorageHandledByOffChainDatabase()`, `metadata()` must return the custom gateway URL serving a user's data. In case of `StorageHandledByIPNS()`, `metadata()` may return the public key of a user's IPNS container; the case of ArNS is similar. In addition, `metadata()` may further return security-driven information such as a delegated signer's address who is tasked with signing the off-chain data; such signers and their approvals must also be returned for verification tasks to be performed by the client. It follows that each storage handler `StorageHandledBy*()` must define the precise construction of `metadata()` function in their documentation. Note that the `metadata()` function doesn't necessarily read any or all of the aforementioned metadata from the contract; it is possible that this metadata is in fact stored off-chain, in which case `metadata()` function may instead revert with `OffchainLookup()` that the client must process. One example construction of `metadata()` which supports L2, databases, IPFS, Arweave, IPNS, ArNS and Swarm[`?`] is given below.
 
 ```solidity
-// Config Type
-type config = [
-        bytes[] | string[],
-        bytes[] | string[] | address[],
-        bytes[] | string[]
-        ...
-    ];
-// Data inside config
-config onChainConfig = [
-        coordinates | [], // List of coordinates (must exist on chain), e.g. ChainId for L2, URL or identifier for off-chain storage, public key for off-chain namespaced & decentralised storages etc
-        authorities | [], // List of addresses of authorities (must exist on chain for L2; optional otherwise), e.g. contract address for L2, custom on-chain signer for other storages (if they exist on chain) etc
-        accessories | [], // List of extra information that the client must evaluate; typically empty except for decentralised namespaced storages, e.g. user's IPNS or ArNS public key
-        ...
-    ];
+function metadata(
+    bytes calldata ... // Reference a user (optional)
+)
+    external
+    view
+    returns (...)
+{
+    // Return on-chain metadata for a user OR,
+    // Read info from off-chain source using 
+    // CCIP-Read aka 'OffchainLookup()'
+    return (...) | revert OffchainLookup(...);
+}
 ```
 
 ### L2 Handler
-A mimimal L2 handler only requires the list of `ChainId` values and the corresponding `contract` addresses and `StorageHandledByL2()` as defined in EIP-5559 is sufficient. In context of this proposal, `ChainId` and `contract` must be part of the `config`. There may however arise a situation where a service first stores some data on L2 and then writes - asynchronously or otherwise - to another off-chain storage type; in such cases, `config` may additionally contain the necessary metadata to write to off-chain storage.
+A mimimal L2 handler only requires the list of `ChainId` values and the corresponding `contract` addresses and `StorageHandledByL2()` as defined in EIP-5559 is sufficient. In context of this proposal, `ChainId` and `contract` must be returned by the `metadata()` function. There may however arise a situation where a service first stores some data on L2 and then writes - asynchronously or otherwise - to another off-chain storage type; in such cases, `metadata()` may additionally return the necessary configuration to write to off-chain storage.
 
 #### EXAMPLE
 ```solidity
-config onChainConfig = [
-        [
-            "11",
-            "23",
-            ...
-        ], // ChainId values identifying the chains
-        [
-            "0xc0ffee254729296a45a3885639AC7E10F9d54979",
-            "0x75b6B7CEE3719850d344f65b24Db4B7433Ca6ee4",
-            ...
-        ], // Contract addresses on chains
+function metadata()
+    external
+    view
+    returns (address, string memory)
+{   
+    return (
+        "0x32f94e75cde5fa48b6469323742e6004d701409b", // Contract address
+        "21", // ChainId as per EIP-155
         ...
-    ];
+    );
+}
 ```
 
-The deferral in this case will prompt the client to submit the transaction to the relevant L2 as prescribed by the incoming `config`.
+The deferral in this case will prompt the client to submit the transaction to the relevant L2 as returned by the `metadata()` function.
 
 ### Database Handler
 A minimal database handler is similar to an L2 in the sense that:
 
-  a) it requires the coordinates in form of gateway `urls` responsible for handling off-chain write operations (similar to `ChainId`), and
+  a) it requires the coordinates in form of gateway `url` responsible for handling off-chain write operations (similar to `ChainId`), and
 
   b) it should require `eth_sign` output to secure the data and the client must prompt the users for these signatures (similar to `eth_call`).
 
-In this case, the `config` consists of the bespoke `urls` as `coordinates`, and the addresses of `signers` (of `eth_sign`) take the place of `authorities`. The client must make sure that the signatures forwarded to the gateways match the addresses in `authorities`. If some gateways don't implement signatures, then clients could choose not to support those service providers since off-chain read-in without cryptographic verification methods is unsafe practise; there may however be exceptions to this due to which `authorities` are allowed to be empty in this proposal.
+In this case, the `metadata()` must return the bespoke `url` and may additionally return the addresses of `signer` of `eth_sign`. If `signer` exist in metadata, then the client must make sure that the signatures forwarded to the gateways are signed by the `signer` that it obtains from the `metadata()`.
 
 #### EXAMPLE
 ```solidity
-config onChainConfig = [
-        [
-            "https://api.service.net",
-            "wss://service.write.com",
-            ...
-        ], // URLs or other identifiers
-        [
-            "0xc0cac0254729296a45a3885639AC7E10F9d54979",
-            "",
-            "0xcafec0laE3719850d344f65b24Db4B7433Ca6ee4",
-            ...
-        ], // Custom signers (if they exist on chain)
+function metadata()
+    external
+    view
+    returns (string memory, address)
+{   
+    return (
+        "https://api.namesys.xyz", // Gateway URL
+        "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Signer's address
         ...
-    ];
+    );
+}
 ```
 
-In the above example, the client must prompt the user for a signature corresponding to each non-empty value in `authorities`, verify that the signature matches the value in `authorities` and pass the resulting signature to the respective gateway URL.
+In the above example, the client must first verify that the `eth_sign` is signed by a legitimate address in `signer`, then prompt the user for a signature and finally pass the resulting signature to the respective gateway URL. The signature message in this case must be formatted as per EIP-712, as detailed in the appendix.
 
 ### Decentralised Storage Handler
 Decentralised storages are the extremest in the sense that they come both in immutable and mutable form; the **immutable** forms locate the data through immutable content identifiers (CIDs) while **mutable** forms utilise some sort of namespace which can statically reference any dynamic content. Examples of the former include raw content hosted on IPFS and Arweave while the latter forms use IPNS and ArNS namespaces respectively to reference the raw and dynamic content. 
 
-The case of immutable forms is similar to a database although these forms are not as useful in practise so far. This is due to the difficulty associated with posting the unique CID on chain each time a storage update is made. One way to bypass this difficulty is by storing the CID cheaply in an L2 contract; this method requires the client to update the data on both the decentralised storage as well as the L2 contract through two independent deferrals. CCIP-Read in this case is also expected to read from two storages to be able to fully handle a read call. Contrary to this tedious flow, namespaces can instead be used to statically fetch immutable CIDs. For example, instead of a direct reference to immutable CIDs, IPNS and ArNS public keys can instead be used to refer to IPFS and Arweave content respectively; this method doesn't require dual deferrals by CCIP-Write (or CCIP-Read), and the IPNS or Arweave public key needs to be stored on chain only once. However, accessing the IPNS and ArNS content now requires that the client must prompt the user for additional information via `accessories`, e.g. IPNS and ArNS signatures in order to update the data.
+The case of immutable forms is similar to a database although these forms are not as useful in practise so far. This is due to the difficulty associated with posting the unique CID on chain each time a storage update is made. One way to bypass this difficulty is by storing the CID cheaply in an L2 contract; this method requires the client to update the data on both the decentralised storage as well as the L2 contract through two independent deferrals. CCIP-Read in this case is also expected to read from two storages to be able to fully handle a read call. Contrary to this tedious flow, namespaces can instead be used to statically fetch immutable CIDs. For example, instead of a direct reference to immutable CIDs, IPNS and ArNS public keys can instead be used to refer to IPFS and Arweave content respectively; this method doesn't require dual deferrals by CCIP-Write (or CCIP-Read), and the IPNS or Arweave public key needs to be stored on chain only once. However, accessing the IPNS and ArNS content now requires that the client must prompt the user for additional information via `context`, e.g. IPNS and ArNS signatures in order to update the data.
 
-Decentralised storage handlers are therefore bestowed with the ability to revert with additional `accessories` which the clients must interpret and evaluate before calling the gateway with the results. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages.
+Decentralised storage handlers are therefore bestowed with the ability to revert with additional `context` which the clients must interpret and evaluate before calling the gateway with the results. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages.
 
 #### EXAMPLE
 ```solidity
-config onChainConfig = [
-        [
-            "https://ipns.namesys.xyz", // Gateway 1
-            "wss://api.ipns.public.io", // Gateway 2
-            "https://api.arns.ens.com", // Gateway 3
-            ...
-        ], // URLs or other identifiers
-        [
-            "0xc0cac0254729296a45a3885639AC7E10F9d54979", // Signer 1
-            "", // Signer 2
-            "0xcafec0laE3719850d344f65b24Db4B7433Ca6ee4", // Signer 3
-            ...
-        ], // Custom signers (if they exist on chain)
-        [
-            "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a", // Multicodec-encoded IPNS public key; accessory 1
-            "0x55fb762f2744b86e98bb05d7816e2eafa26054642725b709f6430f9102bb0b27", // Multicodec-encoded shortened IPNS public key; accessory 2
-            "0x89d50a253a427f5060d1c2c6b512e308e822cbac37d8e82bc32e597c853856d4f60", // Hex-encoded ArNS public key; accessory 3
-            ...
-        ], // Public keys of IPNS/ArNS or other namespaces (if they exist on chain)
+function metadata()
+    external
+    view
+    returns (string memory, address, bytes memory)
+{   
+    return (
+        "https://ipns.namesys.xyz", // Gateway URL
+        "0xc0ffee254729296a45a3885639AC7E10F9d54979", // Ethereum signer's address
+        "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a", // IPNS signer's hex-encoded CID
         ...
-    ];
+    );
+}
 ```
 
-In this example, the client must process each non-empty item in the `accessories` list according to the specifications of the native `StorageHandledBy*()` identifier. For instance, in the particular example shown above, the client must request the user for at least,
+In this example, the client must process each non-empty item in the `context` list according to the specifications of the native `StorageHandledBy*()` identifier. For instance, in the particular example shown above, the client must request the user for at least a `sequence` counter and an IPNS signature matching the requirements set in `context`.
 
-- a `sequence` counter and an IPNS signature for `accessories[0]`, 
-- a `sequence` counter and an IPNS signature for `accessories[1]`, and
-- an ArNS signature for `accessories[2]`.
-
-These procedures must be described in the documentation of `StorageHandledBy*()` and they must explicitly detail that clients should evaluate the accessories by feeding the `sequence` counters to the message payloads and then obtaining the resulting IPNS signatures for `accessories[0]` and `accessories[1]`. These signatures must then be passed to the gateway among other arguments. The documentation must also define the precise formatting of message payloads, any custom cryptographic techniques implemented for additional security, accessibility or privacy.
+These procedures must be described in the documentation of `StorageHandledBy*()` and they must explicitly detail that clients should evaluate the `context` by feeding the `sequence` counter to the message payload and then obtaining the resulting IPNS signature. This signature must then be passed to the gateway among other arguments. The documentation must also define the precise formatting of message payload, any custom cryptographic techniques implemented for additional security, accessibility or privacy.
 
 ### Events
-1. A public library must be maintained where each new storage handler must register their `StorageHandledBy*()` identifier. This library must exist in public domain and it should be the sole accepted standard for CCIP-Write infrastructure providers similar to [multiformats & multicodec](https://github.com/multiformats/multicodec) tables.
+1. Each new storage handler must submit their `StorageHandledBy*()` identifier through an ERC track proposal referencing the current draft and EIP-5559.
 
-2. Each `StorageHandledBy*()` provider must be supported with detailed documentation of their infrastructure along with a Protocol Improvement Proposal.
+2. Each `StorageHandledBy*()` provider must be supported with detailed documentation of its `metadata()` interface.
 
-### Interface
+### Signatures
+`TBA`
+
+### Interfaces
 `TBA`
 
 ## Backwards Compatibility
