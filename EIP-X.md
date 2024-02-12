@@ -134,7 +134,7 @@ function metadata()
     // chainId = "21"
     return (
         contractL2, // Contract address on L2
-        chainId, // L2 ChainId
+        chainId, // L2 ChainID
         ...
     );
 }
@@ -145,11 +145,11 @@ There may however arise a situation where a service first stores some data on L2
 ### Database Handler: `StorageHandledByDatabase()`
 A minimal database handler is similar to an L2 in the sense that:
 
-  a) it requires the gateway `url` responsible for handling off-chain write operations (similar to `ChainId`), and
+  a) it requires the `gatewayUrl` responsible for handling off-chain write operations (similar to `ChainId`), and
 
   b) it should require `eth_sign` output to secure the data and the client must prompt the users for these signatures (similar to `eth_call`).
 
-In this case, the `metadata()` must return the bespoke `url` and may additionally return the addresses of `signer` of `eth_sign`. If a `signer` is returned by the metadata, then the client must make sure that the signature forwarded to the gateway is signed by that `signer`. One example of a database handler's `metadata()` function is given below.
+In this case, the `metadata()` must return the bespoke `gatewayUrl` and may additionally return the addresses of `dataSigner` of `eth_sign`. If a `dataSigner` is returned by the metadata, then the client must make sure that the signature forwarded to the gateway is signed by that `dataSigner`. One example of a database handler's `metadata()` function is given below.
 
 #### EXAMPLE
 ```solidity
@@ -164,18 +164,18 @@ function metadata()
         ... // Metadata API endpoint etc (optional)
     )
 {   
-    (string gatewayUrl, address signer) = getMetadata(...);
+    (string gatewayUrl, address dataSigner) = getMetadata(...);
     // gatewayUrl = "https://api.namesys.xyz"
-    // signer = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
+    // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
     return (
         gatewayUrl, // Gateway URL
-        signer, // Signer's address
+        dataSigner, // Signer's address
         ...
     );
 }
 ```
 
-In the above example, the client must first verify that the `eth_sign` is signed by a legitimate address in `signer`, then prompt the user for a signature and finally pass the resulting signature to the respective gateway URL. The message payload for the signature in this case may be formatted as per EIP-712, as detailed in EIP-5559. Some storage handlers may however choose simple string formatting as long as it is properly documented in their documentation. This proposal leaves this aspect of off-chain metadata construction to storage handlers and individual ecosystems.
+In the above example, the client must first verify that the `eth_sign` is signed by a matching `dataSigner`, then prompt the user for a signature and finally pass the resulting signature to the respective gateway URL. The message payload for the signature in this case may be formatted as per EIP-712, as detailed in EIP-5559. Some storage handlers may however choose simple string formatting as long as it is properly documented in their documentation. This proposal leaves this aspect of off-chain metadata construction to storage handlers and individual ecosystems.
 
 ### Decentralised Storage Handlers
 Decentralised storages are the extremest in the sense that they come both in immutable and mutable form; the **immutable** forms locate the data through immutable content identifiers (CIDs) while **mutable** forms utilise some sort of namespace which can statically reference any dynamic content. Examples of the former include raw content hosted on IPFS and Arweave while the latter forms use IPNS and ArNS namespaces respectively to reference the raw and dynamic content. 
@@ -198,13 +198,13 @@ function metadata()
         ... // Metadata API endpoint etc (optional)
     )
 {   
-    (string gatewayUrl, address ethSigner, bytes ipnsSigner) = getMetadata(...);
+    (string gatewayUrl, address dataSigner, bytes ipnsSigner) = getMetadata(...);
     // gatewayUrl = "https://ipns.namesys.xyz"
-    // ethSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
+    // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
     // ipnsSigner = "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a"
     return (
         gatewayUrl, // Gateway URL
-        ethSigner, // Ethereum signer's address
+        dataSigner, // Ethereum signer's address
         ipnsSigner, // IPNS signer's hex-encoded CID
         ...
     );
@@ -225,6 +225,71 @@ In this example, the client must process the `context` according to the specific
 
 ### Interfaces
 `TBA`
+
+## Implementation featuring ENS
+ENS off-chain resolvers capable of reading from and writing to decentralised storages are perhaps the most complex use-case for CCIP-Read and CCIP-Write. One example of such a (minimal) resolver is given below:
+
+```solidity
+interface iResolver {
+    // Defined in EIP-X
+    error StorageHandledByIPNS(
+        address sender,
+        bytes callData,
+        bytes4 contract.metadata.selector
+    );
+    // Defined in EIP-137
+    function setAddr(bytes32 node, address addr) external;
+}
+
+// Defined in EIP-X
+string public gatewayUrl = "https://api.namesys.xyz";
+string public metaEndpoint = "https://gql.namesys.xyz";
+
+/** 
+* Metadata interface required by off-chain clients as defined in EIP-X & ENSIP-16
+* @param node Namehash of ENS domain to fetch metadata for
+* @return metadata Metadata required by off-chain clients. Clients must refer to
+* ENSIP-Y for directions to process the returned metadata
+*/
+function metadata(bytes calldata node)
+    external
+    view
+    returns (
+        string memory, // Gateway URL
+        address, // Signer of off-chain data
+        bytes memory, // Context for namespace
+        string memory // Metadata API endpoint
+    )
+{   
+    // Get ethereum signer & IPNS CID stored on-chain
+    address dataSigner = metadata[node].dataSigner, // Unique to each name
+    bytes ipnsSigner = metadata[node].ipnsSigner // Unique to each name or each owner address
+    return (
+        gatewayUrl, // Gateway URL tasked with writing to IPNS
+        dataSigner, // Ethereum signer's address
+        ipnsSigner, // IPNS signer's hex-encoded CID (= context)
+        metaEndpoint // GraphQL metadata endpoint (required by ENSIP-16)
+    );
+}
+
+/**
+* Sets the ethereum address associated with an ENS node
+* [!] May only be called by the owner or manager of that node in ENS registry
+* @param node Namehash of ENS domain to update
+* @param addr Ethereum address to set
+*/
+function setAddr(
+    bytes32 node,
+    address addr
+) authorised(node) {
+    // Defer to IPNS storage
+    revert StorageHandledByIPNS(
+        msg.sender,
+        abi.encode(node, addr),
+        iResolver.metadata.selector
+    );
+}
+```
 
 ## Backwards Compatibility
 `TBA`
