@@ -48,21 +48,21 @@ Similar to EIP-5559, a CCIP-Write deferral call to an arbitrary function `setVal
 
 ```solidity
 // Define revert event
-error StorageHandledBy*(...)
+error StorageHandledByBOB(sender, callData);
 
 // Define metadata API interface
 function metadata(
-    bytes calldata ... // Reference a user (optional)
+    bytes calldata key // Reference a key
 )
     external
     view
-    returns (...)
+    returns (metadata)
 {
-    // Return on-chain metadata for a user OR, read metadata from off-chain source via
+    // Return on-chain metadata for a node OR, read metadata from off-chain source via
     // CCIP-Read aka 'OffchainLookup()'. If partial metadata exists off-chain, return 
-    // may include URL for that data's off-chain API (e.g. ENS off-chain resolvers may
-    // rely on GraphQL endpoints to fetch complete off-chain state for a node)
-    return (...) | revert OffchainLookup(...);
+    // may include URL for that data's off-chain API (e.g. ENS off-chain resolvers rely
+    // on GraphQL endpoints to fetch complete off-chain state for a node per ENSIP-16)
+    return metadata | revert OffchainLookup(key);
 }
 
 // Generic function in a contract
@@ -71,18 +71,18 @@ function setValue(
     bytes32 value
 ) external {
     // Defer write call to off-chain handler
-    revert StorageHandledBy*(...);
+    revert StorageHandledByBOB(msg.sender, abi.encode(key, value));
 }
 ```
 
-where, the following structure for `StorageHandledBy<>()` must be followed:
+where, the following structure for `StorageHandledByBOB()` must be followed:
 
 ```solidity
 // Details of revert event
-error StorageHandledBy*(
+error StorageHandledByBOB(
     bytes msg.sender, // Sender of call
     bytes callData, // Payload to store
-    bytes4 contract.metadata.selector // Function selector for metadata API
+    bytes4 contract.metadata.selector // Function selector for metadata required by off-chain clients
 );
 ```
 
@@ -92,17 +92,13 @@ The `metadata()` function captures all the relevant information that the client 
 ```solidity
 // Generic metadata function's construction
 function metadata(
-    bytes calldata node // Reference a user (optional)
+    bytes calldata node
 )
     external
     view
     returns (...)
 {
-    // Return on-chain metadata for a user OR, read entire metadata from off-chain source via
-    // CCIP-Read aka 'OffchainLookup()'. If some metadata exists off-chain, return may include
-    // URL for that data's off-chain API (e.g. ENS off-chain resolvers implementing wildcard 
-    // resolution often rely on GraphQL to fetch complete off-chain state for a node)
-    (string metaEndpoint, metadata onchainMetadata) = getMetadata(...);
+    (string metaEndpoint, metadata onchainMetadata) = getMetadata(node);
     return (
         metadata onchainMetadata, // Relevant on-chain metadata (optional)
         string metaEndpoint, // Endpoint URL for metadata API (optional)
@@ -126,7 +122,7 @@ function metadata()
     returns (
         address, // Contract address on L2
         string memory, // ChainID of L2
-        ... // Metadata API endpoint etc (optional)
+        ... // Metadata API endpoint (optional)
     )
 {   
     (address contractL2, string chainId) = getMetadata(...);
@@ -161,7 +157,7 @@ function metadata()
     returns (
         string memory, // Gateway URL
         address, // Ethereum signer's address
-        ... // Metadata API endpoint etc (optional)
+        ... // Metadata API endpoint (optional)
     )
 {   
     (string gatewayUrl, address dataSigner) = getMetadata(...);
