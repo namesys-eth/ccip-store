@@ -119,11 +119,7 @@ error StorageHandledByL2(..., contract.metadata.selector);
 function metadata()
     external
     view
-    returns (
-        address, // Contract address on L2
-        string memory, // ChainID of L2
-        ... // Metadata API endpoint (optional)
-    )
+    returns (address, string memory, string memory)
 {   
     (address contractL2, string chainId) = getMetadata(...);
     // contractL2 = "0x32f94e75cde5fa48b6469323742e6004d701409b"
@@ -131,7 +127,7 @@ function metadata()
     return (
         contractL2, // Contract address on L2
         chainId, // L2 ChainID
-        ...
+        metaEndpoint // Metadata API endpoint (optional)
     );
 }
 ```
@@ -154,19 +150,15 @@ error StorageHandledByDatabase(..., contract.metadata.selector);
 function metadata()
     external
     view
-    returns (
-        string memory, // Gateway URL
-        address, // Ethereum signer's address
-        ... // Metadata API endpoint (optional)
-    )
+    returns (address, string memory, string memory)
 {   
     (string gatewayUrl, address dataSigner) = getMetadata(...);
     // gatewayUrl = "https://api.namesys.xyz"
     // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
     return (
         gatewayUrl, // Gateway URL
-        dataSigner, // Signer's address
-        ...
+        dataSigner, // Ethereum signer's address
+        metaEndpoint // Metadata API endpoint (optional)
     );
 }
 ```
@@ -187,12 +179,7 @@ error StorageHandledByIPNS(..., contract.metadata.selector);
 function metadata()
     external
     view
-    returns (
-        string memory, // Gateway URL
-        address, // Signer of off-chain data
-        bytes memory, // Context for namespace
-        ... // Metadata API endpoint etc (optional)
-    )
+    returns (address, string memory, string memory, string memory)
 {   
     (string gatewayUrl, address dataSigner, bytes ipnsSigner) = getMetadata(...);
     // gatewayUrl = "https://ipns.namesys.xyz"
@@ -201,8 +188,8 @@ function metadata()
     return (
         gatewayUrl, // Gateway URL
         dataSigner, // Ethereum signer's address
-        ipnsSigner, // IPNS signer's hex-encoded CID
-        ...
+        ipnsSigner, // Context for namespace (IPNS signer's hex-encoded CID)
+        metaEndpoint // Metadata API endpoint (optional)
     );
 }
 ```
@@ -250,12 +237,7 @@ string public metaEndpoint = "https://gql.namesys.xyz";
 function metadata(bytes calldata node)
     external
     view
-    returns (
-        string memory, // Gateway URL
-        address, // Signer of off-chain data
-        bytes memory, // Context for namespace
-        string memory // Metadata API endpoint
-    )
+    returns (address, string memory, string memory, string memory)
 {   
     // Get ethereum signer & IPNS CID stored on-chain with arbitrary logic/code
     address dataSigner = metadata[node].dataSigner; // Unique to each name
@@ -263,7 +245,7 @@ function metadata(bytes calldata node)
     return (
         gatewayUrl, // Gateway URL tasked with writing to IPNS
         dataSigner, // Ethereum signer's address
-        ipnsSigner, // IPNS signer's hex-encoded CID (= context)
+        ipnsSigner, // IPNS signer's hex-encoded CID as context for namespace
         metaEndpoint // GraphQL metadata endpoint (required by ENSIP-16)
     );
 }
