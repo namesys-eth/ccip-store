@@ -150,7 +150,7 @@ error StorageHandledByDatabase(..., contract.metadata.selector);
 function metadata()
     external
     view
-    returns (address, string memory, string memory)
+    returns (string memory, address, string memory)
 {   
     (string gatewayUrl, address dataSigner) = getMetadata(...);
     // gatewayUrl = "https://api.namesys.xyz"
@@ -172,14 +172,14 @@ The case of immutable forms is similar to a database although these forms are no
 
 Decentralised storage handlers' `metadata()` interface is therefore expected to return additional `context` which the clients must interpret and evaluate before calling the gateway with the results. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages. One example of a decentralised storage handler's `metadata()` function for IPNS is given below.
 
-#### EXAMPLE (`StorageHandledByIPNS()`)
+#### EXAMPLE: `StorageHandledByIPNS()`
 ```solidity
 error StorageHandledByIPNS(..., contract.metadata.selector);
 
 function metadata()
     external
     view
-    returns (address, string memory, string memory, string memory)
+    returns (string memory, address, bytes memory, string memory)
 {   
     (string gatewayUrl, address dataSigner, bytes ipnsSigner) = getMetadata(...);
     // gatewayUrl = "https://ipns.namesys.xyz"
@@ -237,7 +237,7 @@ string public metaEndpoint = "https://gql.namesys.xyz";
 function metadata(bytes calldata node)
     external
     view
-    returns (address, string memory, string memory, string memory)
+    returns (string memory, address, bytes memory, string memory)
 {   
     // Get ethereum signer & IPNS CID stored on-chain with arbitrary logic/code
     address dataSigner = metadata[node].dataSigner; // Unique to each name
