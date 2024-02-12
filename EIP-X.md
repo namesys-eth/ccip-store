@@ -48,7 +48,7 @@ Similar to EIP-5559, a CCIP-Write deferral call to an arbitrary function `setVal
 
 ```solidity
 // Define revert event
-error StorageHandledByBOB(sender, callData);
+error StorageHandledByBob(address sender, bytes callData, bytes4 funcSelector);
 
 // Define metadata API interface
 function metadata(
@@ -71,15 +71,19 @@ function setValue(
     bytes32 value
 ) external {
     // Defer write call to off-chain handler
-    revert StorageHandledByBOB(msg.sender, abi.encode(key, value));
+    revert StorageHandledByBob(
+        msg.sender, 
+        abi.encode(key, value), 
+        contract.metadata.selector
+    );
 }
 ```
 
-where, the following structure for `StorageHandledByBOB()` must be followed:
+where, the following structure for `StorageHandledByBob()` **must** be followed:
 
 ```solidity
 // Details of revert event
-error StorageHandledByBOB(
+error StorageHandledByBob(
     bytes msg.sender, // Sender of call
     bytes callData, // Payload to store
     bytes4 contract.metadata.selector // Function selector for metadata required by off-chain clients
@@ -96,13 +100,12 @@ function metadata(
 )
     external
     view
-    returns (...)
+    returns (metadata, string)
 {
     (metadata onchainMetadata, string metaEndpoint) = getMetadata(node);
     return (
         metadata onchainMetadata, // Relevant on-chain metadata (optional)
-        string metaEndpoint, // Endpoint URL for metadata API (optional)
-        ...
+        string metaEndpoint // Endpoint URL for metadata API (optional)
     ) | revert OffchainLookup(node); // If entire metadata exists off-chain
 }
 ```
@@ -116,12 +119,12 @@ A mimimal L2 handler only requires the list of `ChainId` values and the correspo
 ```solidity
 error StorageHandledByL2(..., contract.metadata.selector);
 
-function metadata()
+function metadata(bytes calldata node)
     external
     view
     returns (address, string memory, string memory)
 {   
-    (address contractL2, string chainId) = getMetadata(...);
+    (address contractL2, string chainId) = getMetadata(node);
     // contractL2 = "0x32f94e75cde5fa48b6469323742e6004d701409b"
     // chainId = "21"
     return (
@@ -147,12 +150,12 @@ In this case, the `metadata()` must return the bespoke `gatewayUrl` and may addi
 ```solidity
 error StorageHandledByDatabase(..., contract.metadata.selector);
 
-function metadata()
+function metadata(bytes calldata node)
     external
     view
     returns (string memory, address, string memory)
 {   
-    (string gatewayUrl, address dataSigner) = getMetadata(...);
+    (string gatewayUrl, address dataSigner) = getMetadata(node);
     // gatewayUrl = "https://api.namesys.xyz"
     // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
     return (
@@ -176,12 +179,12 @@ Decentralised storage handlers' `metadata()` interface is therefore expected to 
 ```solidity
 error StorageHandledByIPNS(..., contract.metadata.selector);
 
-function metadata()
+function metadata(bytes calldata node)
     external
     view
     returns (string memory, address, bytes memory, string memory)
 {   
-    (string gatewayUrl, address dataSigner, bytes ipnsSigner) = getMetadata(...);
+    (string gatewayUrl, address dataSigner, bytes ipnsSigner) = getMetadata(node);
     // gatewayUrl = "https://ipns.namesys.xyz"
     // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
     // ipnsSigner = "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a"
@@ -194,7 +197,7 @@ function metadata()
 }
 ```
 
-In this example, the client must process the `context` according to the specifications of the native `StorageHandledBy<>()` identifier. For instance, in the particular example shown above, the client must request the user for at least a `sequence` counter and an IPNS signature matching the signer's CID returned in `context`. The clients should evaluate the `context` by feeding the `sequence` counter to the message payload and then obtaining the resulting IPNS signature. This signature must then be passed to the gateway among other arguments. 
+In this example, the client must process the `context` according to the specifications of the `StorageHandledByIPNS()` identifier. For instance, the client must request the user for an IPNS signature verifiable against the signer's CID returned in `context`. The client additionally needs a `sequence` counter representing IPNS record version which it should fetch from the `metaEndpoint`. The clients should then evaluate the `context` by feeding the `sequence` counter to the message payload and then obtaining the resulting IPNS signature. This signature must then be passed to the gateway among other arguments.
 
 ### New Revert Events
 1. Each new storage handler must submit their `StorageHandledBy<>()` identifier through an ERC track proposal referencing the current draft and EIP-5559.
