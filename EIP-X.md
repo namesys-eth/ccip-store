@@ -98,12 +98,12 @@ function metadata(
     view
     returns (...)
 {
-    (string metaEndpoint, metadata onchainMetadata) = getMetadata(node);
+    (metadata onchainMetadata, string metaEndpoint) = getMetadata(node);
     return (
         metadata onchainMetadata, // Relevant on-chain metadata (optional)
         string metaEndpoint, // Endpoint URL for metadata API (optional)
         ...
-    ) | revert OffchainLookup(...); // If entire metadata exists off-chain
+    ) | revert OffchainLookup(node); // If entire metadata exists off-chain
 }
 ```
 
@@ -114,7 +114,7 @@ A mimimal L2 handler only requires the list of `ChainId` values and the correspo
 
 #### EXAMPLE
 ```solidity
-error StorageHandledByL2(contract.metadata.selector, ...)
+error StorageHandledByL2(..., contract.metadata.selector);
 
 function metadata()
     external
@@ -149,7 +149,7 @@ In this case, the `metadata()` must return the bespoke `gatewayUrl` and may addi
 
 #### EXAMPLE
 ```solidity
-error StorageHandledByDatabase(contract.metadata.selector, ...)
+error StorageHandledByDatabase(..., contract.metadata.selector);
 
 function metadata()
     external
@@ -182,7 +182,7 @@ Decentralised storage handlers' `metadata()` interface is therefore expected to 
 
 #### EXAMPLE (`StorageHandledByIPNS()`)
 ```solidity
-error StorageHandledByIPNS(contract.metadata.selector, ...)
+error StorageHandledByIPNS(..., contract.metadata.selector);
 
 function metadata()
     external
@@ -257,9 +257,9 @@ function metadata(bytes calldata node)
         string memory // Metadata API endpoint
     )
 {   
-    // Get ethereum signer & IPNS CID stored on-chain
-    address dataSigner = metadata[node].dataSigner, // Unique to each name
-    bytes ipnsSigner = metadata[node].ipnsSigner // Unique to each name or each owner address
+    // Get ethereum signer & IPNS CID stored on-chain with arbitrary logic/code
+    address dataSigner = metadata[node].dataSigner; // Unique to each name
+    bytes ipnsSigner = metadata[node].ipnsSigner; // Unique to each name or each owner address
     return (
         gatewayUrl, // Gateway URL tasked with writing to IPNS
         dataSigner, // Ethereum signer's address
