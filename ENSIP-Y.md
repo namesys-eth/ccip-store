@@ -37,7 +37,7 @@ interface iResolver {
 
 // Defined in EIP-X
 string public gatewayUrl = "https://api.namesys.xyz";
-string public metaEndpoint = "https://gql.namesys.xyz";
+string public graphqlApi = "https://gql.namesys.xyz";
 
 /** 
 * Metadata interface required by off-chain clients as defined in EIP-X & ENSIP-16
@@ -57,7 +57,7 @@ function metadata(bytes calldata node)
         gatewayUrl, // Gateway URL tasked with writing to IPNS
         dataSigner, // Ethereum signer's address
         ipnsSigner, // IPNS signer's hex-encoded CID as context for namespace
-        metaEndpoint // GraphQL metadata endpoint (required by ENSIP-16)
+        graphqlApi // GraphQL metadata endpoint (required by ENSIP-16)
     );
 }
 
@@ -85,11 +85,14 @@ In this example, when a user calls `setAddr()` with some values for `node` and `
 The `metadata()` function tasked with returning the metadata to the clients spits out at most four parameters:
 
 1. `gatewayUrl`: URL of gateway responsible for performing write operations to IPFS network,
-2. `dataSigner`: address of signer of off-chain data; this address must be verified by CCIP-Read-enabled resolvers (EIP-3668) using `ecrecover()`,
-3. `ipnsSigner`: hex-encoded IPNS CID (ENSIP-7) derived from the `ed25519` public key associated with IPNS namespace, and
-4. `metaEndpoint`: string-formatted URL of GraphQL API endpoint broadcasting all other metadata required by ENSIP-16, e.g. information about subdomains for wildcard resolvers (ENSIP-10), `sequence` counter of IPNS update required by EIP-X etc.
 
-By the end of this step, the client should have all the necessary parameters in hand for interpreting the metadata.
+2. `dataSigner`: address of signer of off-chain data; this address must be verified by CCIP-Read-enabled resolvers (EIP-3668) using `ecrecover()`,
+
+3. `ipnsSigner`: hex-encoded IPNS CID (ENSIP-7) derived from the `ed25519` public key associated with IPNS namespace, and
+
+4. `graphqlApi`: string-formatted URL of GraphQL API endpoint broadcasting all other metadata required by ENSIP-16, e.g. information about subdomains for wildcard resolvers (ENSIP-10), `sequence` counter of IPNS update required by EIP-X etc.
+
+By the end of this step, the client should have all the necessary parameters for interpreting the metadata.
 
 ### Interpreting Metadata
 
