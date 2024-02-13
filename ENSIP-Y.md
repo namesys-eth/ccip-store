@@ -97,7 +97,8 @@ By the end of this step, the client should have all the necessary parameters for
 ### Interpreting Metadata
 The methods described in this section have been designed with autonomy, privacy, UI/UX and accessibility for end ENS users in mind. The plethora of off-chain storages have their own diverse ecosystems such that it in not uncommon for each storage to have its own set of UI/UX requirements, such as wallets, signer extensions etc. If users of ENS were to utilise such storage providers, they will inevitably be subjected to additional wallet extensions in their browsers. This is not ideal and the methods in this section have been crafted such that users do not need to install any additional UI/UX components or extensions other than their favourite ethereum wallet.
 
-This draft proposes that both the `dataSigner` and `ipnsSigner` be generated deterministically from ethereum wallet signatures. 
+#### Key generation
+This draft proposes that both the `dataSigner` and `ipnsSigner` keypairs be generated **deterministically** from ethereum wallet signatures (see figure below). This process involving deterministic key generation is implemented concisely in a single `keygen()` function in `namesys.js` library. 
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/keygen.png)
 
