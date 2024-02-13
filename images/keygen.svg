@@ -26,7 +26,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -178,9 +178,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.4778646"
-     inkscape:cx="688.75109"
-     inkscape:cy="480.41921"
+     inkscape:zoom="0.37512071"
+     inkscape:cx="701.45996"
+     inkscape:cy="461.75855"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -202,7 +202,7 @@
      id="layer1"
      transform="translate(-26.391586,-23.472401)">
     <rect
-       style="opacity:0.623794;fill:#00c5ff;fill-opacity:0.270161;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:4.0564;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
+       style="opacity:0.623794;fill:#68afff;fill-opacity:0.270161;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:4.0564;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="rect976-8"
        width="162.63727"
        height="184.96808"
@@ -226,18 +226,18 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.20966px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.337843px;text-anchor:middle;stroke:#ff7d00;stroke-width:0.368924;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.20966px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.337843px;text-anchor:middle;stroke:#FF4F00;stroke-width:0.368924;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        x="299.14426"
        y="157.08965"
        id="text2139-0-1-8-8-8-0-4-6-7-3-5"><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:start;text-anchor:start;stroke:#ff7d00;stroke-width:0.368924;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:start;text-anchor:start;stroke:#FF4F00;stroke-width:0.368924;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="299.14426"
          y="157.08965"
          id="tspan2447-0"
          dy="-10">keypair</tspan><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:start;text-anchor:start;stroke:#ff7d00;stroke-width:0.368924;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:start;text-anchor:start;stroke:#FF4F00;stroke-width:0.368924;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="299.14426"
          y="161.50978"
          id="tspan1353">decode</tspan></text>
@@ -252,7 +252,7 @@
        id="path1062-2-9-3-3-8-5"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.222988;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.668964, 0.668964;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.222988;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.668964, 0.668964;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992"
        width="44.125832"
        height="12.978185"
@@ -309,7 +309,7 @@
        id="path2263-1"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.255863;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.767592, 0.767592;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.255863;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.767592, 0.767592;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992-3"
        width="46.510849"
        height="16.210913"
@@ -371,7 +371,7 @@
        id="path1333-0-0-2-8-1"
        sodipodi:nodetypes="ccccc" />
     <circle
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.278531;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.278531;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="path2564"
        cx="178.16945"
        cy="213.40981"
@@ -481,7 +481,7 @@
        id="path1062-2-9-3-3-8-5-1-8-2"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.222988;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.668964, 0.668964;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.222988;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.668964, 0.668964;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992-69"
        width="44.125832"
        height="12.978185"
@@ -510,7 +510,7 @@
        id="path1062-2-9-3-3-8-5-1-2"
        sodipodi:nodetypes="cccc" />
     <circle
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.207398;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.207398;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="path2564-6"
        cx="237.27669"
        cy="247.72554"
@@ -529,7 +529,7 @@
    style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:4.70958px;font-family:'SF Mono';-inkscape-font-specification:'SF Mono Light';letter-spacing:0.207776px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.268954;stroke-opacity:1"
    id="tspan2969">256</tspan></tspan></text>
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.114471;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.343415, 0.343415;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.114471;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.343415, 0.343415;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992-69-1"
        width="17.420168"
        height="8.663353"
@@ -572,7 +572,7 @@
          sodipodi:nodetypes="cccc" />
     </g>
     <circle
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.109209;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.109209;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="path2564-6-9"
        cx="267.26221"
        cy="247.7256"
@@ -606,7 +606,7 @@
        id="path1062-2-9-3-3-3-1-3-8-7"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.803351;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.803351;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992-1"
        width="44.125336"
        height="11.817654"
@@ -615,13 +615,13 @@
        ry="0.68422687" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.8755px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.471533px;text-anchor:middle;fill:#ff7d00;fill-opacity:1;stroke:#000000;stroke-width:0.803351;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.8755px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.471533px;text-anchor:middle;fill:#FF4F00;fill-opacity:1;stroke:#000000;stroke-width:0.803351;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        x="187.27057"
        y="146.44186"
        id="text2139-0-1-8-8-8-0-0"
        transform="scale(1.047946,0.95424763)"><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff7d00;fill-opacity:1;stroke:#000000;stroke-width:0.803351;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#FF4F00;fill-opacity:1;stroke:#000000;stroke-width:0.803351;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="187.27057"
          y="146.44186"
          id="tspan2163-0-2-6-4-3-4" /></text>
@@ -688,7 +688,7 @@
        id="path1062-2-9-3-3-8-5-1-2-0-3"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.147512;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.442536, 0.442536;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.147512;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.442536, 0.442536;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992-69-1-8"
        width="21.078323"
        height="11.889461"
@@ -714,7 +714,7 @@
    style="font-size:4.85363px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.229839;stroke-opacity:1"
    id="tspan3283"> </tspan>key</tspan></text>
     <circle
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.242412;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.242412;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="path2564-9"
        cx="244.81107"
        cy="186.83478"
@@ -756,7 +756,7 @@
        id="path1062-2-9-3-33"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.114471;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.343415, 0.343415;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.114471;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.343415, 0.343415;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992-69-1-9"
        width="29.91263"
        height="8.6633511"
@@ -817,13 +817,13 @@
     <g
        id="g2021-7"
        transform="matrix(1.0510655,0,0,1.0510655,-86.238726,-58.320674)"
-       style="fill:#ff7d00;fill-opacity:1">
+       style="fill:#FF4F00;fill-opacity:1">
       <g
          id="g2136"
          transform="matrix(0.74036049,0,0,0.74036049,63.578155,36.200023)"
-         style="fill:#ff7d00;fill-opacity:1">
+         style="fill:#FF4F00;fill-opacity:1">
         <rect
-           style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.794999, 0.794999;paint-order:stroke fill markers;stop-color:#000000"
+           style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.794999, 0.794999;paint-order:stroke fill markers;stop-color:#000000"
            id="rect1992-6"
            width="52.43927"
            height="15.423313"
@@ -851,13 +851,13 @@
     <g
        id="g2021-7-4"
        transform="matrix(1.0510655,0,0,1.0510655,-42.322079,-58.320674)"
-       style="fill:#ff7d00;fill-opacity:1">
+       style="fill:#FF4F00;fill-opacity:1">
       <g
          id="g2136-5"
          transform="matrix(0.74036049,0,0,0.74036049,63.578155,36.200023)"
-         style="fill:#ff7d00;fill-opacity:1">
+         style="fill:#FF4F00;fill-opacity:1">
         <rect
-           style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.794999, 0.794999;paint-order:stroke fill markers;stop-color:#000000"
+           style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.794999, 0.794999;paint-order:stroke fill markers;stop-color:#000000"
            id="rect1992-6-1"
            width="52.43927"
            height="15.423313"
@@ -909,22 +909,22 @@
        sodipodi:nodetypes="cccc" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.12877px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0px;text-anchor:middle;fill:#ff7d00;fill-opacity:1;stroke:#ff7d00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.12877px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0px;text-anchor:middle;fill:#FF4F00;fill-opacity:1;stroke:#FF4F00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        x="361.55835"
        y="125.29618"
        id="text2139-0-1-8-8-8-4-6-0-4"><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff7d00;fill-opacity:1;stroke:#ff7d00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#FF4F00;fill-opacity:1;stroke:#FF4F00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="361.55835"
          y="125.29618"
          id="tspan3689-5-7">   IPNS</tspan><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff7d00;fill-opacity:1;stroke:#ff7d00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#FF4F00;fill-opacity:1;stroke:#FF4F00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="361.55835"
          y="130.68138"
          id="tspan1501-8">keys</tspan></text>
     <rect
-       style="fill:#ff7d00;fill-opacity:1;stroke:none;stroke-width:0.165415;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.496248, 0.496248;paint-order:stroke fill markers;stop-color:#000000"
+       style="fill:#FF4F00;fill-opacity:1;stroke:none;stroke-width:0.165415;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:0.496248, 0.496248;paint-order:stroke fill markers;stop-color:#000000"
        id="rect1992-3-0-8"
        width="30.069183"
        height="10.480328"
