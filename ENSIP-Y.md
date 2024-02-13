@@ -130,7 +130,7 @@ export async function keygen(
   if (signature.length < 64)
     throw new Error("SIGNATURE TOO SHORT; LENGTH SHOULD BE 65 BYTES");
 
-  // Calulcate input key by hashing signature bytes using sha256 algorithm
+  // Calculate input key by hashing signature bytes using sha256 algorithm
   let inputKey = sha256(
     secp256k1.utils.hexToBytes(
       signature.toLowerCase().startsWith("0x") ? signature.slice(2) : signature
