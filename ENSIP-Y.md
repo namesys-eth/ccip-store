@@ -129,38 +129,47 @@ export async function keygen(
   // Signature must be at least of length 64
   if (signature.length < 64)
     throw new Error("SIGNATURE TOO SHORT; LENGTH SHOULD BE 65 BYTES");
+
   // Calulcate input key by hashing signature bytes using sha256 algorithm
   let inputKey = sha256(
     secp256k1.utils.hexToBytes(
       signature.toLowerCase().startsWith("0x") ? signature.slice(2) : signature
     )
   );
+
   // Calculate info from CAIP-10 identifier and username
   let info = `${caip10}:${username}`;
+
   // Calculate salt for keygen by hashing concatenated info, password and hex-encoded signature using sha256 algorithm
   let salt = sha256(
     `${info}:${password ? password : ""}:${signature.slice(-64)}`
   );
+
   // Calculate hash key output by feeding input key, salt and info to the HMAC-based key derivation function
   let hashKey = hkdf(sha256, inputKey, salt, info, 42);
+
   // Convert hash key to a private scalar for ed25519 elliptic curve
   let ed25519priv = ed25519.utils
     .hashToPrivateScalar(hashKey)
     .toString(16)
     .padStart(64, "0"); // ed25519 Private Key
+
   // Get public key by evaluating private scalar over ed25519 elliptic curve
   let ed25519pub = secp256k1.utils.bytesToHex(
     await ed25519.getPublicKey(ed25519priv)
   ); // ed25519 Public Key
+
   // Convert hash key to a private key for secp256k1 elliptic curve
   let secp256k1priv = secp256k1.utils.bytesToHex(
     secp256k1.utils.hashToPrivateKey(hashKey)
   ); // secp256k1 Private Key
+
   // Get public key by evaluating private key over secp256k1 elliptic curve
   let secp256k1pub = secp256k1.utils.bytesToHex(
     secp256k1.getPublicKey(secp256k1priv)
   ); // secp256k1 Public Key
-  // Return both ed25519 and secp256k1 key types for IPNS or ethereum signers respectively
+
+  // Return both ed25519 and secp256k1 key types for IPNS and ethereum signers respectively
   return [
     // Hex-encoded [[ed25519.priv, ed25519.pub], [secp256k1.priv, secp256k1.pub]]
     [ed25519priv, ed25519pub],
@@ -180,7 +189,7 @@ const caip10 = `eip155:${chainId}:${walletAddress}`;
 // 'DomainType'. See definitions at the end of this section.
 let username;
 if (storage === 'WalletType') username = `eth:${walletAddress}`;
-if (storage === 'DomainType') username = 'nick.eth';
+if (storage === 'DomainType') username = ens;
 ```
 ```js
 // IPNS secret key identifier; clients must prompt the user for this
@@ -207,7 +216,7 @@ Requesting Signature To Generate ENS Records Signer\n\nOrigin: ${username}\nKey 
 In both `SIG_IPNS` and `SIG_SIGNER` signature payloads, the `extradata` is calculated as
 
 ```solidity
-// Calculating extradata
+// Calculating extradata in keygen signatures
 bytes32 extradata = keccak256(
     abi.encodePacked(
         keccak256(
@@ -228,16 +237,58 @@ With these deterministic formats for signature message payloads, the client must
 If these conditions are not met, clients must throw an error and inform the user of failure in interpretation of the metadata. If these conditions are met, then the client has the correct private keys to update a user's IPNS record as well as sign a user's ENS records for later verification by CCIP-Read. Since the derived signer can sign multiple records in the background without prompting the user, it is possible to update multiple records simultaneously with this method.
 
 #### Storage Types
-
-##### `WalletType`
-
-##### `DomainType`
+Storage types refer to two types of IPNS namespaces that can host a user's ENS records. In the first case of `DomainType`, each ENS domain has a unique IPNS container whose CID is stored in `ipnsSigner` metadata. In the second case of `WalletType`, a user can store the records for **all** the ENS domains owned or managed by a given wallet. Naturally, the second method is highly cost effective although it compromises on security to some extent; this is due to a single IPNS signer manifesting as a single point of compromise for records of all ENS domains in a wallet. This feature is achieved by choosing an appropriate `username` in the signature message payload of `SIG_IPNS` depending on the desired storage type. Similar cost-effectiveness can be achieved for the `dataSigner` metadata as well by choosing `WalletType` over `DomainType` when deriving `SIG_SIGNER`.
 
 ### Revert `StorageHandledByDatabase()`
+The case of `StorageHandledByDatabase()` handler is a subset of the decentralised storage handler, in the sense that the clients should simply skip interpreting IPNS related metadata. This avoids having to derive `SIG_IPNS` and there is no concept of storage types for off-chain database handlers. Other than that, the entire process is the same as `StorageHandledByIPNS()`.
+ 
+### Off-Chain Signers
+It is possible to further save on gas costs by **not** storing the `dataSigner` metadata on chain. Services or users can instead post an approval for the `dataSigner` signed by the owner or manager of a domain along with the off-chain records. CCIP-Read can then verify this approval during resolution time and no on-chain `dataSigner` needs to be saved. This additional saving comes at the cost of one additional approval signature `SIG_APPROVAL` that the clients must prompt from the user. This signature must have the following message payload format:
 
-### Record Signatures
+```text
+Requesting Signature To Approve ENS Records Signer\n\nOrigin: ${ens}\nApproved Signer: ${dataSigner}\nApproved By: ${caip10}
+```
 
+### Record Signatures: `SIG_RECORD`
+Signature(s) `SIG_RECORD` accompanying the off-chain records must implement the following format in their message payloads:  
 
+```text
+Requesting Signature To Update ENS Record\n\nOrigin: ${ens}\nRecord Type: ${recordType}\nExtradata: ${extradata}\nSigned By: ${caip10}
+```
+
+where `extradata` must be calculated as follows,
+
+```solidity
+// Extradata in record signatures
+bytes memory recordBytes = abi.encodePacked([dataType, recordValue])
+bytes32 extradata = utils.bytesToHexString(
+    abi.encodePacked(
+        keccak256(
+            recordBytes
+        )
+    )
+);
+```
+
+where, 
+
+- the `recordType` parameters are defined in ENSIP-6 and ENSIP-9, e.g. `text/avatar`, `address/60` etc, depending on each record, and 
+- the `dataType` is simply the solidity data type of the record value.
+
+### CCIP-Read Compatible Payload
+The final `data:` payload in the off-chain record file could then follow this format,
+
+```js
+let encodedRecord = ethers.utils.defaultAbiCoder.encode([dataType], [recordValue]);
+let encodeWithSelector = interface.encodeFunctionData("signedRecord", [
+    dataSigner, // type 'address'
+    SIG_RECORD, // type 'bytes'
+    SIG_APPROVAL, // type 'bytes'
+    encodedRecord // dynamic type
+]);
+```
+
+which the CCIP-Read-enabled resolvers should first correctly decode, and then verify signer approval and record signatures, before resolving the record value.
 
 ## Backwards Compatibility
 `TBA`
