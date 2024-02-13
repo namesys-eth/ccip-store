@@ -94,13 +94,150 @@ The `metadata()` function tasked with returning the metadata to the clients spit
 
 By the end of this step, the client should have all the necessary parameters for interpreting the metadata. The methods in the following section describe the steps for said interpretation.
 
-### Interpreting Metadata
+#### Interpreting Metadata
 The methods described in this section have been designed with autonomy, privacy, UI/UX and accessibility for end ENS users in mind. The plethora of off-chain storages have their own diverse ecosystems such that it in not uncommon for each storage to have its own set of UI/UX requirements, such as wallets, signer extensions etc. If users of ENS were to utilise such storage providers, they will inevitably be subjected to additional wallet extensions in their browsers. This is not ideal and the methods in this section have been crafted such that users do not need to install any additional UI/UX components or extensions other than their favourite ethereum wallet.
 
-#### Key generation
-This draft proposes that both the `dataSigner` and `ipnsSigner` keypairs be generated **deterministically** from ethereum wallet signatures (see figure below). This process involving deterministic key generation is implemented concisely in a single `keygen()` function in `namesys.js` library. 
+#### Key Generation
+This draft proposes that both the `dataSigner` and `ipnsSigner` keypairs be generated **deterministically** from ethereum wallet signatures; see figure below.
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/keygen.png)
+
+This process involving deterministic key generation is implemented concisely in a single unified `keygen()` function in `namesys.js` library.
+
+```ts
+import { hkdf } from "@noble/hashes/hkdf";
+import { sha256 } from "@noble/hashes/sha256";
+import * as secp256k1 from "@noble/secp256k1";
+import * as ed25519 from "@noble/ed25519";
+
+/**
+ * @param  username key identifier
+ * @param    caip10 CAIP identifier for the blockchain account
+ * @param signature Deterministic signature from X-wallet provider
+ * @param  password Optional password
+ * @returns Deterministic private/public keypairs as hex strings
+ * Hex-encoded
+ * [  ed25519.priv,   ed25519.pub],
+ * [secp256k1.priv, secp256k1.pub]
+ */
+export async function keygen(
+  username: string,
+  caip10: string,
+  signature: string,
+  password: string | undefined
+): Promise<[[string, string], [string, string]]> {
+  // Signature must be at least of length 64
+  if (signature.length < 64)
+    throw new Error("SIGNATURE TOO SHORT; LENGTH SHOULD BE 65 BYTES");
+  // Calulcate input key by hashing signature bytes using sha256 algorithm
+  let inputKey = sha256(
+    secp256k1.utils.hexToBytes(
+      signature.toLowerCase().startsWith("0x") ? signature.slice(2) : signature
+    )
+  );
+  // Calculate info from CAIP-10 identifier and username
+  let info = `${caip10}:${username}`;
+  // Calculate salt for keygen by hashing concatenated info, password and hex-encoded signature using sha256 algorithm
+  let salt = sha256(
+    `${info}:${password ? password : ""}:${signature.slice(-64)}`
+  );
+  // Calculate hash key output by feeding input key, salt and info to the HMAC-based key derivation function
+  let hashKey = hkdf(sha256, inputKey, salt, info, 42);
+  // Convert hash key to a private scalar for ed25519 elliptic curve
+  let ed25519priv = ed25519.utils
+    .hashToPrivateScalar(hashKey)
+    .toString(16)
+    .padStart(64, "0"); // ed25519 Private Key
+  // Get public key by evaluating private scalar over ed25519 elliptic curve
+  let ed25519pub = secp256k1.utils.bytesToHex(
+    await ed25519.getPublicKey(ed25519priv)
+  ); // ed25519 Public Key
+  // Convert hash key to a private key for secp256k1 elliptic curve
+  let secp256k1priv = secp256k1.utils.bytesToHex(
+    secp256k1.utils.hashToPrivateKey(hashKey)
+  ); // secp256k1 Private Key
+  // Get public key by evaluating private key over secp256k1 elliptic curve
+  let secp256k1pub = secp256k1.utils.bytesToHex(
+    secp256k1.getPublicKey(secp256k1priv)
+  ); // secp256k1 Public Key
+  // Return both ed25519 and secp256k1 key types for IPNS or ethereum signers respectively
+  return [
+    // Hex-encoded [[ed25519.priv, ed25519.pub], [secp256k1.priv, secp256k1.pub]]
+    [ed25519priv, ed25519pub],
+    [secp256k1priv, secp256k1pub],
+  ];
+}
+```
+
+This `keygen()` function requires four variables: `caip10`, `username`, `password` and `signature`. Only `password` needs to be prompted from the user by the client; this field allows users to switch their IPNS namespace in the future. Both `caip10` and `username` are auto-derived from the connected wallet and/or the ENS domain undergoing records update. In the next section, derivation of the remaining `signature` parameter is described in detail.
+
+```js
+// CAIP-10 identifier
+const caip10 = `eip155:${chainId}:${walletAddress}`;
+```
+```js
+// Username is dependent on the storage type which can be 'WalletType' or
+// 'DomainType'. See definitions at the end of this section.
+let username;
+if (storage === 'WalletType') username = `eth:${walletAddress}`;
+if (storage === 'DomainType') username = 'nick.eth';
+```
+```js
+// IPNS secret key identifier; clients must prompt the user for this
+const password = 'key1';
+```
+
+#### Deterministic Signatures
+Deterministic signatures form the backbone of secure, keyless, autonomous and smooth UI when off-chain storages are in the mix. In the simplest implementation, at least two separate signatures need to be prompted from the users by the clients: `SIG_IPNS` & `SIG_SIGNER`.
+
+##### a. `SIG_IPNS` for IPNS Keygen
+`SIG_IPNS` is the deterministic ethereum signature responsible for IPNS key generation and for interpreting `ipnsSigner` metadata. Message payload for `SIG_IPNS` must be formatted as:
+
+```text
+Requesting Signature To Generate IPNS Key\n\nOrigin: ${username}\nKey Type: ${keyType}\nExtradata: ${extradata}\nSigned By: ${caip10}
+```
+
+##### b. `SIG_SIGNER` for Signer Keygen
+`SIG_SIGNER` is the deterministic ethereum signature responsible for universal signer key generation. In order to enable batch records, a universal signer must be derived from the owner or manager keys of an ENS name. This signer is tasked with interpreting `dataSigner` metadata. Message payload for `SIG_SIGNER` must be formatted as:
+
+```text
+Requesting Signature To Generate ENS Records Signer\n\nOrigin: ${username}\nKey Type: ${keyType}\nExtradata: ${extradata}\nSigned By: ${caip10}
+```
+
+In both `SIG_IPNS` and `SIG_SIGNER` signature payloads, the `extradata` is calculated as
+
+```solidity
+// Calculating extradata
+bytes32 extradata = keccak256(
+    abi.encodePacked(
+        keccak256(
+        abi.encodePacked(password)
+        walletAddress
+        )
+    )
+);
+```
+
+and `keyType` is currently `ed25519` for `SIG_IPNS` as required by IPNS and `secp256k1` for `SIG_SIGNER` since it is an ethereum signer. In the future, IPFS network plans to phase in `secp256k1` key types at which point `ed25519` key derivation won't be necessary.
+
+With these deterministic formats for signature message payloads, the client must prompt the user for two `eth_sign` signatures. Once the user signs the messages, the `keygen()` function can derive the IPNS keypair and the signer keypair. The clients must additionally derive the IPNS CID and ethereum address corresponding to the IPNS and signer public keys using `processPubkeys()` function available in the `namesys.js` library. The metadata interpretation concludes with the client ensuring that 
+
+- the derived IPNS CID must match the `ipnsSigner` metadata, and
+- the derived signer's address must match the `dataSigner` metadata.
+
+If these conditions are not met, clients must throw an error and inform the user of failure in interpretation of the metadata. If these conditions are met, then the client has the correct private keys to update a user's IPNS record as well as sign a user's ENS records for later verification by CCIP-Read. Since the derived signer can sign multiple records in the background without prompting the user, it is possible to update multiple records simultaneously with this method.
+
+#### Storage Types
+
+##### `WalletType`
+
+##### `DomainType`
+
+### Revert `StorageHandledByDatabase()`
+
+### Record Signatures
+
+
 
 ## Backwards Compatibility
 `TBA`
