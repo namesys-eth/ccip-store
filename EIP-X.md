@@ -1,7 +1,7 @@
 ---
-EIP: ◥
+EIP: "5559"
 TITLE: "Off-Chain Data Write Protocol"
-DESCRIPTION: Update to Cross-Chain Write Deferral Protocol (EIP-5559) incorporating secure write deferrals to centralised databases and decentralised & mutable storages
+DESCRIPTION: Cross-Chain Write Deferral Protocol incorporating secure write deferrals to centralised databases and decentralised & mutable storages
 AUTHOR: (@sshmatrix), (@0xc0de4c0ffee), (@arachnid), (@makoto)
 DISCUSSIONS-TO: ◥
 STATUS: Draft
@@ -40,7 +40,7 @@ For example, consider a scenario where the choice of storage is IPNS or ArNS. In
 
 ## Specification    
 ### Overview
-The following specification revolves around the structure and description of an arbitrary off-chain storage handler tasked with the responsibility of writing to an arbitrary storage. First introduced in EIP-5559, the protocol outlined herein expands the capabilities of the `StorageHandledBy<>()` revert to accept decentralised and namespaced storages. In addition, this draft proposes that `StorageHandledByL2()` and `StorageHandledByOffChainDatabase()` introduced in EIP-5559 be updated, and new `StorageHandledBy<>()` reverts be allowed through a publicly curated list where each new `StorageHandledBy<>()` storage handler must be accompanied by a complete documentation of its interface and design. Some foreseen examples of new storage handlers include `StorageHandledByIPFS()` for IPFS, `StorageHandledByIPNS()` for IPNS, `StorageHandledByArweave()` for Arweave, `StorageHandledByArNS()` for ArNS, `StorageHandledBySwarm()` for Swarm etc.
+The following specification revolves around the structure and description of an arbitrary off-chain storage handler tasked with the responsibility of writing to an arbitrary storage. First introduced in EIP-5559, the protocol outlined herein expands the capabilities of the `StorageHandledBy<>()` revert to accept decentralised and namespaced storages. In addition, this draft proposes that `StorageHandledByL2()` and `StorageHandledByOffChainDatabase()` introduced in EIP-5559 be updated, and new `StorageHandledBy<>()` reverts be allowed through new EIPs that sufficiently detail their interfaces and designs. Some foreseen examples of new storage handlers include `StorageHandledByIPFS()` for IPFS, `StorageHandledByIPNS()` for IPNS, `StorageHandledByArweave()` for Arweave, `StorageHandledByArNS()` for ArNS, `StorageHandledBySwarm()` for Swarm etc.
 
 ![](https://raw.githubusercontent.com/namesys-eth/namesys-ccip-write/main/images/schematic.png)
 
@@ -48,33 +48,20 @@ Similar to EIP-5559, a CCIP-Write deferral call to an arbitrary function `setVal
 
 ```solidity
 // Define revert event
-error StorageHandledByBob(address sender, bytes callData, bytes4 funcSelector);
-
-// Define metadata API interface
-function metadata(
-    bytes calldata key // Reference a key
-)
-    external
-    view
-    returns (metadata)
-{
-    // Return on-chain metadata for a node OR, read metadata from off-chain source via
-    // CCIP-Read aka 'OffchainLookup()'. If partial metadata exists off-chain, return 
-    // may include URL for that data's off-chain API (e.g. ENS off-chain resolvers rely
-    // on GraphQL endpoints to fetch complete off-chain state for a node per ENSIP-16)
-    return metadata | revert OffchainLookup(key);
-}
+error StorageHandledByBob(address sender, bytes callData, bytes metadata);
 
 // Generic function in a contract
 function setValue(
     bytes32 key,
     bytes32 value
 ) external {
+    // Get metadata (with arbitrary 'metadata' type) from on-chain sources
+    bytes metadata = getMetadata(key);  
     // Defer write call to off-chain handler
     revert StorageHandledByBob(
         msg.sender, 
         abi.encode(key, value), 
-        contract.metadata.selector
+        metadata
     );
 }
 ```
@@ -84,55 +71,31 @@ where, the following structure for `StorageHandledByBob()` **must** be followed:
 ```solidity
 // Details of revert event
 error StorageHandledByBob(
-    bytes msg.sender, // Sender of call
+    address msg.sender, // Sender of call
     bytes callData, // Payload to store
-    bytes4 contract.metadata.selector // Function selector for metadata required by off-chain clients
+    bytes metadata // Metadata required by off-chain clients
 );
 ```
 
 #### Metadata
-The `metadata()` function captures all the relevant information that the client may require to update a user's data on their favourite storage. For instance, `metadata()` must return a pointer to a user's data on their desired storage. In the case of `StorageHandledByL2()` for example, `metadata()` must return a chain identifier such as `ChainId` and additionally the contract address. In case of `StorageHandledByOffChainDatabase()`, `metadata()` must return the custom gateway URL serving a user's data. In case of `StorageHandledByIPNS()`, `metadata()` may return the public key of a user's IPNS container; the case of ArNS is similar. In addition, `metadata()` may further return security-driven information such as a delegated signer's address who is tasked with signing the off-chain data; such signers and their approvals must also be returned for verification tasks to be performed by the client. It follows that each storage handler `StorageHandledBy<>()` must define the precise construction of `metadata()` function in their documentation. Note that the `metadata()` function doesn't necessarily read any or all of the aforementioned metadata from the contract; it is possible that this metadata is in fact stored off-chain, in which case `metadata()` function may instead revert with `OffchainLookup()` that the client must process.
-
-```solidity
-// Generic metadata function's construction
-function metadata(
-    bytes calldata node
-)
-    external
-    view
-    returns (metadata, string)
-{
-    (metadata onchainMetadata, string metaEndpoint) = getMetadata(node);
-    return (
-        metadata onchainMetadata, // Relevant on-chain metadata (optional)
-        string metaEndpoint // Endpoint URL for metadata API (optional)
-    ) | revert OffchainLookup(node); // If entire metadata exists off-chain
-}
-```
-
-Some example constructions of `metadata()` functions which support L2, databases, IPFS, Arweave, IPNS, ArNS and Swarm[`?`] are given below.
+The `metadata` type captures all the relevant information that the client may require to update a user's data on their favourite storage. For instance, `metadata` must contain a pointer to a user's data on their desired storage. In the case of `StorageHandledByL2()` for example, `metadata` must contain a chain identifier such as `ChainId` and additionally the contract address. In case of `StorageHandledByOffChainDatabase()`, `metadata` must contain the custom gateway URL serving a user's data. In case of `StorageHandledByIPNS()`, `metadata` may contain the public key of a user's IPNS container; the case of ArNS is similar. In addition, `metadata` may further contain security-driven information such as a delegated signer's address who is tasked with signing the off-chain data; such signers and their approvals must also be contained for verification tasks to be performed by the client. It follows that each storage handler `StorageHandledBy<>()` must define the precise construction of `metadata` type in their documentation. Note that the `metadata` function doesn't necessarily read any or all of the aforementioned metadata from the contract; it is possible that this metadata is in fact stored off-chain, in which case `metadata` type may instead revert with `OffchainLookup()` that the client must process. Some example constructions of `metadata` functions which support L2, databases, IPFS, Arweave, IPNS, ArNS and Swarm[`?`] are given below.
 
 ### L2 Handler: `StorageHandledByL2()`
-A mimimal L2 handler only requires the list of `ChainId` values and the corresponding `contract` addresses and `StorageHandledByL2()` as defined in EIP-5559 is sufficient. In context of this proposal, `ChainId` and `contract` must be returned by the `metadata()` function. The deferral in this case will prompt the client to submit the transaction to the relevant L2 as returned by the `metadata()` function. One example of an L2 handler's `metadata()` function is given below.
+A mimimal L2 handler only requires the list of `ChainId` values and the corresponding `contract` addresses and `StorageHandledByL2()` as defined in EIP-5559 is sufficient. In context of this proposal, `ChainId` and `contract` must be returned by the `metadata` function. The deferral in this case will prompt the client to submit the transaction to the relevant L2 as returned by the `metadata` function. One example of an L2 handler's `metadata` function is given below.
 
 #### EXAMPLE
 ```solidity
-error StorageHandledByL2(..., contract.metadata.selector);
+error StorageHandledByL2(..., bytes metadata);
 
-function metadata(bytes calldata node)
-    external
-    view
-    returns (address, string memory, string memory)
-{   
-    (address contractL2, string chainId) = getMetadata(node);
-    // contractL2 = "0x32f94e75cde5fa48b6469323742e6004d701409b"
-    // chainId = "21"
-    return (
-        contractL2, // Contract address on L2
-        chainId, // L2 ChainID
-        metaEndpoint // Metadata API endpoint (optional)
-    );
-}
+(
+    address contractL2, // Contract address on L2
+    string chainId, // L2 ChainID
+    string metaEndpoint // Metadata API endpoint (optional)
+) = getMetadata(node); // Arbitrary code
+// contractL2 = "0x32f94e75cde5fa48b6469323742e6004d701409b"
+// chainId = "21"
+// metaEndpoint = "https://op.namesys.xyz" (optional)
+bytes metadata = abi.encode(contractL2, chainId, metaEndpoint);
 ```
 
 There may however arise a situation where a service first stores some data on L2 and then writes - asynchronously or otherwise - to another off-chain storage type. In such cases, the L2 contract should implement a second off-chain write deferral after making desired local state changes. This in principle allows creation of chained storage handlers without explicitly introducing a callback function in this proposal.
@@ -144,26 +107,21 @@ A minimal database handler is similar to an L2 in the sense that:
 
   b) it should require `eth_sign` output to secure the data and the client must prompt the users for these signatures (similar to `eth_call`).
 
-In this case, the `metadata()` must return the bespoke `gatewayUrl` and may additionally return the addresses of `dataSigner` of `eth_sign`. If a `dataSigner` is returned by the metadata, then the client must make sure that the signature forwarded to the gateway is signed by that `dataSigner`. One example of a database handler's `metadata()` function is given below.
+In this case, the `metadata` must contain the bespoke `gatewayUrl` and may additionally contain the addresses of `dataSigner` of `eth_sign`. If a `dataSigner` is included in the metadata, then the client must make sure that the signature forwarded to the gateway is signed by that `dataSigner`. One example of a database handler's `metadata` function is given below.
 
 #### EXAMPLE
 ```solidity
-error StorageHandledByDatabase(..., contract.metadata.selector);
+error StorageHandledByDatabase(..., bytes metadata);
 
-function metadata(bytes calldata node)
-    external
-    view
-    returns (string memory, address, string memory)
-{   
-    (string gatewayUrl, address dataSigner) = getMetadata(node);
-    // gatewayUrl = "https://api.namesys.xyz"
-    // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
-    return (
-        gatewayUrl, // Gateway URL
-        dataSigner, // Ethereum signer's address
-        metaEndpoint // Metadata API endpoint (optional)
-    );
-}
+(
+    string gatewayUrl, // Gateway URL
+    address dataSigner, // Ethereum signer's address
+    string metaEndpoint // Metadata API endpoint (optional)
+) = getMetadata(node);
+// gatewayUrl = "https://api.namesys.xyz"
+// dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
+// metaEndpoint = "https://db.namesys.xyz" (optional)
+bytes metadata = abi.encode(gatewayUrl, dataSigner, metaEndpoint);
 ```
 
 In the above example, the client must first verify that the `eth_sign` is signed by a matching `dataSigner`, then prompt the user for a signature and finally pass the resulting signature to the respective gateway URL. The message payload for the signature in this case may be formatted as per EIP-712, as detailed in EIP-5559. Some storage handlers may however choose simple string formatting as long as it is properly documented in their documentation. This proposal leaves this aspect of off-chain metadata construction to storage handlers and individual ecosystems.
@@ -173,28 +131,23 @@ Decentralised storages are the extremest in the sense that they come both in imm
 
 The case of immutable forms is similar to a database although these forms are not as useful in practise so far. This is due to the difficulty associated with posting the unique CID on chain each time a storage update is made. One way to bypass this difficulty is by storing the CID cheaply in an L2 contract; this method requires the client to update the data on both the decentralised storage as well as the L2 contract through two chained deferrals. CCIP-Read in this case is also expected to read from two storages to be able to fully handle a read call. Contrary to this tedious flow, namespaces can instead be used to statically fetch immutable CIDs. For example, instead of a direct reference to immutable CIDs, IPNS and ArNS public keys can instead be used to refer to IPFS and Arweave content respectively; this method doesn't require dual deferrals by CCIP-Write (or CCIP-Read), and the IPNS or Arweave public key needs to be stored on chain only once. However, accessing the IPNS and ArNS content now requires that the client must prompt the user for additional information via `context`, e.g. IPNS and ArNS signatures in order to update the data.
 
-Decentralised storage handlers' `metadata()` interface is therefore expected to return additional `context` which the clients must interpret and evaluate before calling the gateway with the results. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages. One example of a decentralised storage handler's `metadata()` function for IPNS is given below.
+Decentralised storage handlers' `metadata` interface is therefore expected to return additional `context` which the clients must interpret and evaluate before calling the gateway with the results. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages. One example of a decentralised storage handler's `metadata` function for IPNS is given below.
 
 #### EXAMPLE: `StorageHandledByIPNS()`
 ```solidity
-error StorageHandledByIPNS(..., contract.metadata.selector);
+error StorageHandledByIPNS(..., bytes metadata);
 
-function metadata(bytes calldata node)
-    external
-    view
-    returns (string memory, address, bytes memory, string memory)
-{   
-    (string gatewayUrl, address dataSigner, bytes ipnsSigner) = getMetadata(node);
-    // gatewayUrl = "https://ipns.namesys.xyz"
-    // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
-    // ipnsSigner = "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a"
-    return (
-        gatewayUrl, // Gateway URL
-        dataSigner, // Ethereum signer's address
-        ipnsSigner, // Context for namespace (IPNS signer's hex-encoded CID)
-        metaEndpoint // Metadata API endpoint (optional)
-    );
-}
+(
+    string gatewayUrl, // Gateway URL
+    address dataSigner, // Ethereum signer's address
+    bytes ipnsSigner, // Context for namespace (IPNS signer's hex-encoded CID)
+    string metaEndpoint // Metadata API endpoint (optional)
+) = getMetadata(node);
+// gatewayUrl = "https://ipns.namesys.xyz"
+// dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
+// ipnsSigner = "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a"
+// metaEndpoint "https://gql.namesys.xyz" (optional)
+bytes metadata = abi.encode(gatewayUrl, dataSigner, ipnsSigner, metaEndpoint);
 ```
 
 In this example, the client must process the `context` according to the specifications of the `StorageHandledByIPNS()` identifier. For instance, the client must request the user for an IPNS signature verifiable against the signer's CID returned in `context`. The client additionally needs a `sequence` counter representing IPNS record version which it should fetch from the `metaEndpoint`. The clients should then evaluate the `context` by feeding the `sequence` counter to the message payload and then obtaining the resulting IPNS signature. This signature must then be passed to the gateway among other arguments.
@@ -202,7 +155,7 @@ In this example, the client must process the `context` according to the specific
 ### New Revert Events
 1. Each new storage handler must submit their `StorageHandledBy<>()` identifier through an ERC track proposal referencing the current draft and EIP-5559.
 
-2. Each `StorageHandledBy<>()` provider must be supported with detailed documentation of its structure and the necessary `metadata()` that its implementers must return.
+2. Each `StorageHandledBy<>()` provider must be supported with detailed documentation of its structure and the necessary `metadata` that its implementers must return.
 
 3. Each `StorageHandledBy<>()` proposal must define the precise formatting of any message payloads that require signatures and complete descriptions of custom cryptographic techniques implemented for additional security, accessibility or privacy.
 
@@ -221,7 +174,7 @@ interface iResolver {
     error StorageHandledByIPNS(
         address sender,
         bytes callData,
-        bytes4 contract.metadata.selector
+        bytes metadata
     );
     // Defined in EIP-137
     function setAddr(bytes32 node, address addr) external;
@@ -230,28 +183,6 @@ interface iResolver {
 // Defined in EIP-X
 string public gatewayUrl = "https://api.namesys.xyz";
 string public metaEndpoint = "https://gql.namesys.xyz";
-
-/** 
-* Metadata interface required by off-chain clients as defined in EIP-X & ENSIP-16
-* @param node Namehash of ENS domain to fetch metadata for
-* @return metadata Metadata required by off-chain clients. Clients must refer to
-* ENSIP-Y for directions to process the returned metadata
-*/
-function metadata(bytes calldata node)
-    external
-    view
-    returns (string memory, address, bytes memory, string memory)
-{   
-    // Get ethereum signer & IPNS CID stored on-chain with arbitrary logic/code
-    address dataSigner = metadata[node].dataSigner; // Unique to each name
-    bytes ipnsSigner = metadata[node].ipnsSigner; // Unique to each name or each owner address
-    return (
-        gatewayUrl, // Gateway URL tasked with writing to IPNS
-        dataSigner, // Ethereum signer's address
-        ipnsSigner, // IPNS signer's hex-encoded CID as context for namespace
-        metaEndpoint // GraphQL metadata endpoint (required by ENSIP-16)
-    );
-}
 
 /**
 * Sets the ethereum address associated with an ENS node
@@ -263,11 +194,21 @@ function setAddr(
     bytes32 node,
     address addr
 ) authorised(node) {
+    // Get ethereum signer & IPNS CID stored on-chain with arbitrary logic/code
+    // Both may be unique to each name, or each owner or manager address
+    (address dataSigner, bytes ipnsSigner) = getMetadata(node); 
+    // Construct metadata required by off-chain clients. Clients must refer to ENSIP-Y for directions to interpret this metadata
+    bytes memory metadata = abi.encode(
+        gatewayUrl, // Gateway URL tasked with writing to IPNS
+        dataSigner, // Ethereum signer's address
+        ipnsSigner, // IPNS signer's hex-encoded CID as context for namespace
+        metaEndpoint // GraphQL metadata endpoint (required by ENSIP-16)
+    )
     // Defer to IPNS storage
     revert StorageHandledByIPNS(
         msg.sender,
         abi.encode(node, addr),
-        iResolver.metadata.selector
+        metadata
     );
 }
 ```
