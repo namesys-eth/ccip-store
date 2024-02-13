@@ -146,7 +146,7 @@ error StorageHandledByIPNS(..., bytes metadata);
 // gatewayUrl = "https://ipns.namesys.xyz"
 // dataSigner = "0xc0ffee254729296a45a3885639AC7E10F9d54979"
 // ipnsSigner = "0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a"
-// metaEndpoint "https://gql.namesys.xyz" (optional)
+// metaEndpoint = "https://gql.namesys.xyz" (optional)
 bytes metadata = abi.encode(gatewayUrl, dataSigner, ipnsSigner, metaEndpoint);
 ```
 
