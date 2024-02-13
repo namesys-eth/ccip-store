@@ -4,7 +4,7 @@ DESCRIPTION: Secure off-chain storage handler capable of writing to arbitary non
 
 # ENSIP-Y: Off-Chain Data Write Handler for Mutable Storages
 
-| **Author**    | `@sshmatrix` \<>, `@0xc0de4c0ffee` \<> |
+| **Author**    | `@sshmatrix <1@2.3>`, `@0xc0de4c0ffee <a@b.c>` |
 | ------------- | ---------------------------------------------------------------- |
 | **Status**    | Draft                                                            |
 | **Submitted** | ◥                                                                |
@@ -92,10 +92,12 @@ The `metadata()` function tasked with returning the metadata to the clients spit
 
 4. `graphqlApi`: string-formatted URL of GraphQL API endpoint broadcasting all other metadata required by ENSIP-16, e.g. information about subdomains for wildcard resolvers (ENSIP-10), `sequence` counter of IPNS update required by EIP-X etc.
 
-By the end of this step, the client should have all the necessary parameters for interpreting the metadata.
+By the end of this step, the client should have all the necessary parameters for interpreting the metadata. The methods in the following section describe the steps for said interpretation.
 
 ### Interpreting Metadata
+The methods described in this section have been designed with autonomy, privacy, UI/UX and accessibility for end ENS users in mind. The plethora of off-chain storages have their own diverse ecosystems such that it in not uncommon for each storage to have its own set of UI/UX requirements, such as wallets, signer extensions etc. If users of ENS were to utilise such storage providers, they will inevitably be subjected to additional wallet extensions in their browsers. This is not ideal and the methods in this section have been crafted such that users do not need to install any additional UI/UX components or extensions other than their favourite ethereum wallet.
 
+This draft proposes that both the `dataSigner` and `ipnsSigner` be generated deterministically from ethereum wallet signatures as shown below.
 
 
 ## Backwards Compatibility
