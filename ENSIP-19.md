@@ -43,7 +43,7 @@ const caip10 = `eip155:${chainId}:${wallet}`;
 `protocol` is specific to each ENS Resolver's address (`resolver`) and must be formatted as:
 ```js
 // Protocol identifier
-const protocol = `ENS:${chainId}:${resolver}`;
+const protocol = `ens:${chainId}:${resolver}`;
 ```
 
 #### 3. `dataType`
