@@ -49,7 +49,21 @@ const protocol = `ENS:${chainId}:${resolver}`;
 #### 3. `dataType`
 Data types for ENS are defined by ENSIP-5, ENSIP-7 and ENSIP-9. These are the usual ENS records. 
 
-#### 4. `POST` REQUEST
+#### 4. `metadataUrl` INTERFACE
+`metadataUrl` for ENS must point to a GraphQL endpoint and must be formatted as described in ENSIP-16. This `metadataUrl` must additionally return the `version` value for each applicable ENS domain (or node) whose records are hosted on IPNS. This `version` value is incremented and then used by the gateway to publish new IPNS updates.
+
+#### 5. `POST` REQUEST
+##### IPNS
+`POST` request for IPNS storage needs to be handled in a custom manner through the `namesys.js` or `w3name.js` client-side libraries. This is due to the secret nature of IPNS private key leading to all IPNS related publishing being intentionally limited to client-side to protect user autonomy. The pseudo-code for autonomous IPNS storage handling is as follows:
+
+```js
+import IPNS from provider
+
+let version = "0xa4646e616d65783e6b3531717a693575717535646738396831337930373738746e7064696e72617076366b6979756a3461696676766f6b79753962326c6c6375377a636a73716576616c756578412f697066732f62616679626569623234616272726c7572786d67656461656b667a327632656174707a6f326c35636276646f617934686e70656e757a6f6a7436626873657175656e6365016876616c69646974797818323032352d30312d33305432303a31303a30382e3239315a"
+let revision = IPNS.v0() || IPNS.increment(version)
+await IPNS.publish(gatewayUrl, revision, IPNS_PRIVATE_KEY)
+```
+##### DATABASE
 `POST` request to the RESTful gateway must be formatted as:
 ```json
 {
@@ -57,7 +71,7 @@ Data types for ENS are defined by ENSIP-5, ENSIP-7 and ENSIP-9. These are the us
   "chainId": 1,
   "approval" : "0x1cc5e5efa312dc292560a26e3dba2584070b02ec203c51440a3e23d49ba56b342a4404d8b0d9dc26a94190691e47652343183bf1c64bf9c5081a2f1d887937f11b",
   "ipns": {
-    "value": "ipfs://QmYgWXKADuSgWziNgmpYa4PAmhFL3W7aGLR5C1dkRuNGfM",
+    "version": "0xa4646e616d65783e6b3531717a693575717535646738396831337930373738746e7064696e72617076366b6979756a3461696676766f6b79753962326c6c6375377a636a73716576616c756578412f697066732f62616679626569623234616272726c7572786d67656461656b667a327632656174707a6f326c35636276646f617934686e70656e757a6f6a7436626873657175656e6365016876616c69646974797818323032352d30312d33305432303a31303a30382e3239315a",
     "sequence": 3
   },
   "records" : {
@@ -103,8 +117,12 @@ Data types for ENS are defined by ENSIP-5, ENSIP-7 and ENSIP-9. These are the us
 }
 ```
 
-#### `metadataUrl` INTERFACE
-`metadataUrl` for ENS must point to a GraphQL endpoint and must be formatted as described in ENSIP-16.
+#### 6. DATA PATHS
+EIP-5559 delegates the task of defining the paths for off-chain record files to individual protocols. The `path` scheme for ENS records is based on the RFC-8615 `.well-known` standard. The records for each ENS `sub.domain.eth` must then be stored in JSON format under a reverse-DNS type directory path using `/` instead of `.` as separator. For example, the paths for some example records are formatted as 
+
+- `text/avatar`: `.well-known/eth/domain/sub/text/avatar.json`,
+- `contenthash`: `.well-known/eth/domain/sub/contenthash.json`, and
+- `address/112`: `.well-known/eth/domain/sub/address/112.json` etc.
 
 ## Backwards Compatibility
 `TBA`
