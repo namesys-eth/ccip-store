@@ -53,7 +53,7 @@ Data types for ENS are defined by ENSIP-5, ENSIP-7 and ENSIP-9. These are the us
 `metadataUrl` for ENS must point to a GraphQL endpoint and must be formatted as described in ENSIP-16. This `metadataUrl` must additionally return the `version` value for each applicable ENS domain (or node) whose records are hosted on IPNS. This `version` value is incremented and then used by the gateway to publish new IPNS updates.
 
 #### 5. `POST` REQUEST
-##### a. IPNS
+##### A. `POST` to IPNS
 `POST` request for IPNS storage needs to be handled in a custom manner through the `namesys.js` or `w3name.js` client-side libraries. This is due to the secret nature of IPNS private key leading to all IPNS related publishing being intentionally limited to client-side to protect user autonomy. The pseudo-code for autonomous IPNS storage handling is as follows:
 
 ```js
@@ -64,7 +64,7 @@ let revision = IPNS.v0() || IPNS.increment(version)
 await IPNS.publish(gatewayUrl, revision, IPNS_PRIVATE_KEY)
 ```
 
-##### b. DATABASE
+##### B. `POST` to DATABASE
 `POST` request to the RESTful gateway must be formatted as:
 ```text
 {
