@@ -4,7 +4,7 @@ DESCRIPTION: Helper resources for EIP-5559 applied to ENS
 
 # ENSIP-19: Data Write Handler for Decentralised Mutable Storages
 
-| **Author**    | `@sshmatrix <1@2.3>`, `@0xc0de4c0ffee <a@b.c>` |
+| **Author**    | `@sshmatrix`, `@0xc0de4c0ffee` |
 | ------------- | ---------------------------------------------------------------- |
 | **Status**    | Draft                                                            |
 | **Submitted** | ◥                                                                |
