@@ -55,10 +55,10 @@ Data types for ENS are defined by ENSIP-5, ENSIP-7 and ENSIP-9. These are the us
 ```ts
 /* POST-ing to IPNS */
 import IPNS from provider;
-
-let raw: Raw = rawExample; // See example below in text
+let raw: Raw = rawSample; // See example below in text
 let version = "0xa4646e616d65783e6b3531717a693575717535646738396831337930373738746e7064696e72617076366b6979756a3461696676766f6b79753962326c6c6375377a636a73716576616c756578412f697066732f62616679626569623234616272726c7572786d67656461656b667a327632656174707a6f326c35636276646f617934686e70656e757a6f6a7436626873657175656e6365016876616c69646974797818323032352d30312d33305432303a31303a30382e3239315a";
-let revision: Revision = IPNS.v0() || IPNS.increment(version);
+let ipfsCid = makeIpfs(raw);
+let revision = IPNS.v0(ipfsCid) || IPNS.increment(version, ipfsCid);
 await IPNS.publish(gatewayUrl, revision, raw, IPNS_PRIVATE_KEY);
 ```
 
@@ -103,7 +103,7 @@ Example of a complete `raw` object is shown below.
 
 ```ts
 /* Example of a raw data object */
-let rawExample: Raw = {
+let rawSample: Raw = {
   "ens": "sub.domain.eth",
   "chainId": 1,
   "approval" : "0x1cc5e5efa312dc292560a26e3dba2584070b02ec203c51440a3e23d49ba56b342a4404d8b0d9dc26a94190691e47652343183bf1c64bf9c5081a2f1d887937f11b",
