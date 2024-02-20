@@ -1,5 +1,5 @@
 ---
-DESCRIPTION: Helper resources for EIP-5559 applied to ENS
+DESCRIPTION: ENS-specific implementation of EIP-5559
 ---
 
 # ENSIP-19: Data Write Handler for Decentralised Mutable Storages
