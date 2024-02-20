@@ -2,7 +2,7 @@
 DESCRIPTION: ENS-specific implementation of EIP-5559
 ---
 
-# ENSIP-19: Data Write Handler for Decentralised Mutable Storages
+# ENSIP-19: Off-Chain Data Write Handlers for ENS
 
 | **Author**    | `@sshmatrix`, `@0xc0de4c0ffee` |
 | ------------- | ---------------------------------------------------------------- |
