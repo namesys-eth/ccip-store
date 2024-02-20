@@ -65,6 +65,7 @@ await IPNS.publish(gatewayUrl, revision, IPNS_PRIVATE_KEY);
 `POST` request to the RESTful gateway handling database storage must be formatted as:
 
 ```ts
+/* Type of POST request */
 type POST = {
   ens: string
   chainId: number
