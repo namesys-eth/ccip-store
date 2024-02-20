@@ -164,10 +164,10 @@ EIP-5559 delegates the task of defining the paths for off-chain record files to 
 `metadataUrl` for ENS must point to a GraphQL endpoint and must be formatted as described in ENSIP-16. This `metadataUrl` must additionally return the `version` value for each applicable ENS domain (or node) whose records are hosted on IPNS. This `version` value is incremented and then used by the gateway to publish new IPNS updates.
 
 ## Backwards Compatibility
-`TBA`
+None.
 
 ## Security Considerations
-`TBA`
+Same as EIP-5559.
 
 ## Copyright
 Copyright and related rights waived via [`CC0`](../LICENSE.md).
