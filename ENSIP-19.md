@@ -72,10 +72,6 @@ type POST = {
   ens: string
   chainId: number
   approval: string
-  ipns: {
-    version: string
-    sequence: 3
-  }
   records: {
     contenthash: {
       value: string
@@ -112,10 +108,6 @@ One example of a complete `POST` request to a database is shown below.
   "ens": "sub.domain.eth",
   "chainId": 1,
   "approval" : "0x1cc5e5efa312dc292560a26e3dba2584070b02ec203c51440a3e23d49ba56b342a4404d8b0d9dc26a94190691e47652343183bf1c64bf9c5081a2f1d887937f11b",
-  "ipns": {
-    "version": "0xa4646e616d65783e6b3531717a693575717535646738396831337930373738746e7064696e72617076366b6979756a3461696676766f6b79753962326c6c6375377a636a73716576616c756578412f697066732f62616679626569623234616272726c7572786d67656461656b667a327632656174707a6f326c35636276646f617934686e70656e757a6f6a7436626873657175656e6365016876616c69646974797818323032352d30312d33305432303a31303a30382e3239315a",
-    "sequence": 3
-  },
   "records" : {
     "contenthash": {
       "value" : "ipfs://QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4",
