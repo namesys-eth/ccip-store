@@ -50,7 +50,7 @@ Data types for ENS are defined by ENSIP-5, ENSIP-7 and ENSIP-9. These are the us
 
 #### 4. `POST` REQUEST
 ##### A. `POST` to IPNS
-`POST` request for IPNS storage needs to be handled in a custom manner through the `namesys-client` (or `w3name-client`) client-side libraries. This is due to the secret nature of IPNS private key leading to all IPNS related publishing being intentionally limited to client-side to protect user autonomy. The pseudo-code for autonomous IPNS storage handling is as follows:
+`POST` request for IPNS storage needs to be handled in a custom manner through the `namesys-client` (or `w3name-client`) client-side libraries. This is due to the enforced secret nature of IPNS private key which limits all IPNS related processing to client-side to protect user autonomy. The pseudo-code for autonomous IPNS storage handling is as follows:
 
 ```js
 /* POST-ing to IPNS */
@@ -61,8 +61,10 @@ let revision = IPNS.v0() || IPNS.increment(version);
 await IPNS.publish(gatewayUrl, revision, IPNS_PRIVATE_KEY);
 ```
 
+where `IPNS.publish()` takes care of the IPNS signatures and publishing to IPFS network internally.
+
 ##### B. `POST` to DATABASE
-`POST` request to the RESTful gateway handling database storage must be formatted as:
+`POST` request to a RESTful gateway handling database storage must be formatted as:
 
 ```ts
 /* Type of POST request */
