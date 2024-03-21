@@ -1,7 +1,7 @@
 ---
 ERC: "5559"
 TITLE: "The Off-Chain Data Write Protocol"
-DESCRIPTION: Cross-chain write deferral protocol incorporating secure write deferrals to L2s and centralised databases
+DESCRIPTION: Cross-chain write deferral protocol incorporating secure write deferrals to generic L1s, Ethereum L2s, centralised databases and decentralised & mutable storages
 AUTHOR: (@sshmatrix), (@0xc0de4c0ffee), (@arachnid)
 DISCUSSIONS-TO: ◥
 STATUS: Draft
@@ -80,8 +80,49 @@ error StorageHandledBy__(
 #### Metadata
 The arbitrary `metadata` field captures all the relevant information that the client may require to update a user's data on their favourite storage. For instance, `metadata` must contain a pointer to a user's data on their desired storage. In the case of `StorageHandledByL2()` for example, `metadata` must contain a chain identifier such as `chainId` and additionally the contract address. In case of `StorageHandledByDatabase()`, `metadata` must contain the custom gateway URL serving a user's data. In case of `StorageHandledByIPNS()`, `metadata` may contain the public key of a user's IPNS container; the case of ArNS is similar. In addition, `metadata` may further contain security-driven information such as a delegated signer's address who is tasked with signing the off-chain data; such signers and their approvals must also be contained for verification tasks to be performed by the client. It is left up to each storage handler `StorageHandledBy__()` to precisely define the structure of `metadata` in their documentation for the clients to refer to. This proposal introduces the structure of `metadata` for four storage handlers: Solana L1, EVM L2s, databases and IPNS as follows.
 
+### Solana Handler: `StorageHandledBySolana()`
+A Solana storage handler simply requires the hex-encoded `programId` and the manager `account` on the Solana blockchain; `programId` is equivalent to a contract address on Solana. Since Solana natively uses `base58` encoding in its virtual machine setup, `programId` values must be hex-encoded according to EIP-2308 for storage on Ethereum. These hex-encoded values in the `metadata` must eventually be decoded back to `base58` for usage on Solana. 
+
+```solidity
+// Revert handling Solana storage handler
+error StorageHandledBySolana(address sender, bytes callData, bytes metadata);
+
+(
+    bytes32 programId, // Program (= contract) address on Solana; hex-encoded
+    bytes32 account // Manager account on Solana; hex-encoded
+) = getMetadata(node); // Arbitrary code
+// programId = 0x37868885bbaf236c5d2e7a38952f709e796a1c99d6c9d142a1a41755d7660de3
+// account = 0xe853e0dcc1e57656bd760325679ea960d958a0a704274a5a12330208ba0f428f
+bytes metadata = abi.encode(programId, account);
+bytes callData = abi.encode(node, key, value);
+address sender = msg.sender;
+```
+
+Clients implementing the Solana handler must call the Solana `programId` using a Solana wallet that is connected to `account` as follows. 
+
+```js
+/* Pseudo-code to write to Solana program (= contract) */
+// Instantiate program interface on Solana
+const program = new program(programId, rpcProvider);
+// Connect to Solana wallet
+const wallet = useWallet();
+// Decode off-chain data from encoded calldata in revert
+let [node, key, value] = abi.decode(callData);
+// Call the Solana program using connected wallet with off-chain data
+// [!] Only approved manager in the Solana program should call
+if (wallet.publicKey === account === program.isManagerFor(account, msg.sender)) {
+    await program(wallet).setValue(node, key, value);
+}
+```
+
+In the above example, `programId`, `account` and `msg.sender` must be decoded to `base58` from `hex`. Solana handler requires a one-time transaction on Solana during initial setup for each user to set the local manager. This call in form of pseudo-code is simply 
+
+```js 
+await program(wallet).setManagerFor(account, msg.sender)
+```
+
 ### L2 Handler: `StorageHandledByL2()`
-A minimal L2 handler only requires the list of `chainId` values and the corresponding `contract` addresses, although additional measures must be taken to ensure that the integrity of calldata is maintained by the client before the call is routed to L2. Therefore, this proposal formalises that
+A minimal L2 handler only requires the list of `chainId` values and the corresponding `contract` addresses, although additional measures must be taken to ensure that the integrity of calldata is maintained by the gateway before the call is routed to L2. Therefore, this proposal formalises that
 
 1. The storage handler must contain a `proof` of the original calldata. This `proof` is simply
 
@@ -89,20 +130,19 @@ A minimal L2 handler only requires the list of `chainId` values and the correspo
     // Proof is hash of concatenated calldata
     bytes32 proof = keccak256(
         abi.encodePacked(
-            bytes32 node,
             bytes32 key,
             bytes32 value
         )
     )
     ```
 
-    for any generic function `function setValue(bytes32 node, bytes32 key, bytes32 value) external` in the L1 contract.
+    for any generic function `function setValue(bytes32 key, bytes32 value) external` in the L1 contract.
 
-2. The L2 contract must implement `function setValueWithProof(bytes32 node, bytes32 key, bytes32 value, bytes32 proof) external`
+2. The L2 contract must implement `function setValueWithProof(bytes32 key, bytes32 value, bytes32 proof) external`
 
 3. The deferral in this case must prompt the client to build the transaction with original calldata and the proof, and submit it to the L2 by calling the `setValueWithProof()` function.
 
-4. The `setValueWithProof()` function must internally calculate the proof, match it with the proof provided by the client and revert if the proofs do not match.
+4. The `setValueWithProof()` function must internally calculate the proof, match it with the proof provided by the gateway and revert if the proofs do not match.
  
 One example construction of an L2 handler in an L1 contract is given below.
 
@@ -110,6 +150,7 @@ One example construction of an L2 handler in an L1 contract is given below.
 ```solidity
 // Define revert event
 error StorageHandledByL2(
+    address sender, 
     address contractL2, 
     uint256 chainId, 
     bytes32 proof
@@ -128,6 +169,7 @@ function setValue(
     ) = getMetadata(node); // Arbitrary code
     // contract = 0x32f94e75cde5fa48b6469323742e6004d701409b
     // chainId = 21
+    address sender = msg.sender;
     bytes32 proof = keccak256(
         abi.encodePacked(
             bytes32 node,
@@ -136,7 +178,8 @@ function setValue(
         )
     )
     // Defer write call to off-chain handler
-    revert StorageHandledByL2( 
+    revert StorageHandledByL2(
+        msg.sender, 
         contractL2,
         chainId,
         proof
@@ -154,15 +197,15 @@ function setValueWithProof(
     bytes32 proof
 ) external {
     // Calculate proof
-    bytes32 _proof_ = keccak256(
+    bytes32 _proof = keccak256(
         abi.encodePacked(
             bytes32 node,
             bytes32 key,
             bytes32 value
         )
     )
-    // Verify integrity of calldata
-    require(_proof_ === proof, "BAD_PROOF");
+    // Verify intergity of calldata
+    require(_proof === proof, "BAD_PROOF");
     ... // Rest of the code
 }
 ```
@@ -191,6 +234,37 @@ address sender = msg.sender;
 ```
 
 In the above example, the client must first verify that the `eth_sign` is signed by a matching `dataSigner`, then prompt the user for a signature and finally pass the resulting signature to the `gatewayUrl` along with the off-chain data. The message payload for this signature must be formatted according to the directions in the 'Data Signatures' section further down this document. The off-chain data and the signatures must be encoded according to the directions in the 'CCIP-Read Compatiable Payload' section. Further directions for precise handling of the message payloads and metadata for databases are provided in 'Interpreting Metadata' section.
+
+### Decentralised Storage Handler: `StorageHandledByIPNS()`
+Decentralised storages are the extremest in the sense that they come both in immutable and mutable form; the immutable forms locate the data through immutable content identifiers (CIDs) while mutable forms utilise some sort of namespace which can statically reference any dynamic content. Examples of the former include raw content hosted on IPFS and Arweave while the latter forms use IPNS and ArNS namespaces respectively to reference the raw and dynamic content. 
+
+The case of immutable forms is similar to a database although these forms are not as useful in practise so far. This is due to the difficulty associated with posting the unique CID on chain each time a storage update is made. One way to bypass this difficulty is by storing the CID cheaply in an L2 contract; this method requires the client to update the data on both the decentralised storage as well as the L2 contract through two chained deferrals. CCIP-Read in this case is also expected to read from two storages to be able to fully handle a read call. Contrary to this tedious flow, namespaces can instead be used to statically fetch immutable CIDs. For example, instead of a direct reference to immutable CIDs, IPNS and ArNS public keys can instead be used to refer to IPFS and Arweave content respectively; this method doesn't require dual deferrals by CCIP-Write (or CCIP-Read), and the IPNS or Arweave public key needs to be stored on chain only once. However, accessing the IPNS and ArNS content now requires that the client must prompt the user for additional information, e.g. IPNS and ArNS signatures in order to update the data.
+
+Decentralised storage handlers' `metadata` structure is therefore expected to contain additional context which the clients must interpret and evaluate before calling the gateway with the results. This feature is not supported by EIP-5559 and services using EIP-5559 are thus incapable of storing data on decentralised namespaced & mutable storages. One example construction of a decentralised storage handler's `metadata` for IPNS is given below.
+
+```solidity
+error StorageHandledByIPNS(address sender, bytes callData, bytes metadata);
+
+(
+    string gatewayUrl, // Gateway URL for POST-ing
+    address dataSigner, // Ethereum signer's address; must be address(0) for off-chain signer
+    bytes ipnsSigner // Context for namespace (IPNS signer's hex-encoded CID)
+) = getMetadata(node);
+// gatewayUrl = "https://ipns.namesys.xyz"
+// dataSigner = 0xc0ffee254729296a45a3885639AC7E10F9d54979
+// ipnsSigner = 0xe50101720024080112203fd7e338b2de90159832ffcc434927da8bbfc3a000fa58ea0548aa8e08f7e10a
+bytes metadata = abi.encode(gatewayUrl, dataSigner, ipnsSigner);
+bytes callData = abi.encode(node, key, value);
+address sender = msg.sender;
+```
+
+In the example above, a client must evaluate the metadata according to the following outline. The client must request the user for an IPNS signature verifiable against the IPNS CID returned in the `ipnsSigner` metadata. If verified, the client will then additionally require the historical context encoding the previous IPNS record's `version` data (e.g. sequence number, validity etc) to make the IPNS update. There are several ways of providing this `version` data to the clients, e.g. a dedicated API, IPFS Pub/Sub, L2 indexer etc. It is therefore left up to individual implementations and/or protocols to choose their own desired method for `version` indexing, e.g. ENSIP-16/-19 for ENS. With `version` data in hand, the client can move on to signing the off-chain data using the `dataSigner` key. Once signed, the client must encode the off-chain data, the data signature and the approval signature in a CCIP-Read-compatible payload. Lastly, the client must: 
+
+- calculate the IPFS hash corresponding to the new off-chain data payload,
+- increment the IPNS record by encoding the `version` with new IPFS hash, and
+- broadcast the IPNS update by signing and publishing the incremented `version` to the `gatewayurl`. 
+
+The strictly typed formatting for this IPNS signature payload is internally handled by the IPNS protocol and IPNS service providers via standard libraries. 
 
 ### Interpreting Metadata
 The following section describes the precise interpretation of the metadata common to both IPNS and database storage handlers. The methods described in this section have been designed with autonomy, privacy, UI/UX and accessibility for ethereum users in mind. The plethora of off-chain storages have their own diverse ecosystems such that it in not uncommon for each storage to have its own set of UI/UX requirements, such as wallets, signer extensions etc. If ethereum users were to utilise such storage providers, they will inevitably be subjected to additional wallet extensions in their browsers. This is not ideal and the methods in this section have been crafted such that users do not need to install any additional UI/UX components or extensions other than their favourite ethereum wallet. 
