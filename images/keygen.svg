@@ -14,7 +14,7 @@
    version="1.1"
    id="svg6"
    inkscape:version="1.0.2 (e86c8708, 2021-01-15)"
-   sodipodi:docname="keygen.svg"
+   sodipodi:docname="_keygen.svg"
    inkscape:export-filename="/Users/sshmatrix/Idee/sshmatrix/Buidl/namesys-eth/namesys-ccip-write/images/keygen.png"
    inkscape:export-xdpi="200"
    inkscape:export-ydpi="200">
@@ -178,9 +178,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.26715652"
-     inkscape:cx="576.80443"
-     inkscape:cy="388.38945"
+     inkscape:zoom="0.4982032"
+     inkscape:cx="659.51909"
+     inkscape:cy="583.53002"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -285,12 +285,12 @@
        sodipodi:nodetypes="cccc" />
     <path
        style="fill:none;fill-opacity:1;stroke:#ff2d00;stroke-width:0.279;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.837, 0.837;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 113.02236,185.7662 h 8.28574 c -0.13741,-9.4238 0.15033,-25.28039 0,-36.55474 h 47.89796"
+       d="m 113.02236,185.7662 h 8.28574 c -0.13741,-9.4238 0.15033,-86.580449 0,-97.854799 h 49.59749"
        id="path2263"
        sodipodi:nodetypes="cccc" />
     <path
        style="fill:#ff2d00;fill-opacity:1;stroke:#ff2d00;stroke-width:0.375894px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
-       d="m 123.35657,167.8181 -2.07209,-3.50283 -2.12873,3.46868 z"
+       d="m 123.35657,136.59707 -2.07209,-3.50283 -2.12873,3.46868 z"
        id="path1062-2-9-3-3"
        sodipodi:nodetypes="cccc" />
     <path
@@ -710,11 +710,6 @@
        d="m 237.32206,108.52764 -2.07209,3.50284 -2.12872,-3.4687 z"
        id="path1062-2-9-3-3-3-9-1"
        sodipodi:nodetypes="cccc" />
-    <path
-       style="fill:none;stroke:#ff2d00;stroke-width:0.278532;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.835597, 0.835597;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 213.65906,67.150677 v 9.855 h -22.1613 v 17.367655"
-       id="path2263-1-4"
-       sodipodi:nodetypes="cccc" />
     <g
        id="g2021-7"
        transform="matrix(1.0510655,0,0,1.0510655,-86.238726,-58.320674)"
@@ -780,7 +775,7 @@
     </g>
     <path
        style="fill:none;stroke:#ff2d00;stroke-width:0.278532;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.835597, 0.835597;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 191.49776,77.005677 H 96.136068 v 28.868033"
+       d="M 213.65906,77.005677 H 96.136068 v 28.868033"
        id="path2263-1-4-5"
        sodipodi:nodetypes="ccc" />
     <path
@@ -810,17 +805,17 @@
        sodipodi:nodetypes="cccc" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.12877px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0px;text-anchor:middle;fill:#FF4F00;fill-opacity:1;stroke:#FF4F00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.12877px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0px;text-anchor:middle;fill:#ff4f00;fill-opacity:1;stroke:#ff4f00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        x="361.55835"
        y="125.29618"
        id="text2139-0-1-8-8-8-4-6-0-4"><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#FF4F00;fill-opacity:1;stroke:#FF4F00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff4f00;fill-opacity:1;stroke:#ff4f00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="361.55835"
          y="125.29618"
-         id="tspan3689-5-7">   IPNS</tspan><tspan
+         id="tspan3689-5-7">   signer</tspan><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#FF4F00;fill-opacity:1;stroke:#FF4F00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff4f00;fill-opacity:1;stroke:#ff4f00;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="361.55835"
          y="130.68138"
          id="tspan1501-8">keys</tspan></text>
@@ -916,7 +911,7 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#00b647;fill-opacity:1;stroke:#00b647;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="361.55835"
          y="167.13074"
-         id="tspan3689-5-7-0">   signer</tspan><tspan
+         id="tspan3689-5-7-0">   other</tspan><tspan
          sodipodi:role="line"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#00b647;fill-opacity:1;stroke:#00b647;stroke-width:0.321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="361.55835"
