@@ -14,7 +14,7 @@
    version="1.1"
    id="svg6"
    inkscape:version="1.0.2 (e86c8708, 2021-01-15)"
-   sodipodi:docname="schematic.svg"
+   sodipodi:docname="Schema.svg"
    inkscape:export-filename="/Users/sshmatrix/Idee/sshmatrix/Buidl/namesys-eth/namesys-ccip-write/images/schematic.png"
    inkscape:export-xdpi="200"
    inkscape:export-ydpi="200">
@@ -234,9 +234,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.1362429"
-     inkscape:cx="1179.8863"
-     inkscape:cy="436.74353"
+     inkscape:zoom="0.5167631"
+     inkscape:cx="829.0778"
+     inkscape:cy="607.60482"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -856,17 +856,17 @@
    id="tspan2153">3668</tspan></tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.80060000000000020px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.42059099999999999px;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.328;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.8006px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.420591px;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.328;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        x="351.26443"
        y="44.350361"
        id="text2139-0-1-8-8-8-0-7-6-3-9-2-9"><tspan
          sodipodi:role="line"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.80060000000000020px;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.328;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.8006px;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.328;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          x="351.68503"
          y="44.350361"
          id="tspan2163-0-2-6-4-3-0-7-4-0-11-8">EIP-<tspan
-   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.15338000000000029px;font-family:'SF Mono';-inkscape-font-specification:'SF Mono';stroke-width:0.328;stroke-miterlimit:4;stroke-dasharray:none"
-   id="tspan1249">5559</tspan></tspan></text>
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.15338px;font-family:'SF Mono';-inkscape-font-specification:'SF Mono';stroke-width:0.328;stroke-miterlimit:4;stroke-dasharray:none"
+   id="tspan1249">7700</tspan></tspan></text>
     <path
        style="fill:none;stroke:#bdbdbd;stroke-width:0.305209;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 131.64192,107.68092 h 2.92639 V 72.972849 h 15.56905"
@@ -1276,14 +1276,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.74898px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.503681px;text-anchor:middle;fill:#ff1800;fill-opacity:1;stroke:#ff1800;stroke-width:0.393058;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       x="374.49075"
+       x="376.8595"
        y="55.26841"
        id="text2139-0-1-8-8-8-0-7-6-3-9-4"><tspan
          sodipodi:role="line"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.74898px;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;text-align:end;text-anchor:end;fill:#ff1800;fill-opacity:1;stroke:#ff1800;stroke-width:0.393058;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         x="374.99445"
+         x="377.36319"
          y="55.26841"
-         id="tspan2163-0-2-6-4-3-0-7-4-0-6">write</tspan></text>
+         id="tspan2163-0-2-6-4-3-0-7-4-0-6">STORE</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.61281px;line-height:1.05;font-family:SPOTNIK;-inkscape-font-specification:SPOTNIK;font-variant-ligatures:none;text-align:center;letter-spacing:0.316527px;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.369935;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
